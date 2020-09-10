@@ -1,0 +1,1 @@
+response_data = {'title': 'dsa', 'assetVersion': -1, 'projectId': 'VX-600', 'enabled': True, 'atomId': 'b98cf3c2-f56f-4a01-a2c8-acac4ad1e8d7', 's3Key': 'uploads/b98cf3c2-f56f-4a01-a2c8-acac4ad1e8d7--d60d06e4-0562-4558-b6f8-e7e924908201/complete', 'user': 'joe.bloggs@mydomain.com'}

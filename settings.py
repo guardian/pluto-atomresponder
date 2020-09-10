@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'kinesisresponder'
+    'kinesisresponder',
+    'atomresponder'
 ]
 
 MIDDLEWARE = [
@@ -119,3 +120,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+VIDISPINE_URL="http://localhost"
+VIDISPINE_PORT=8080
+VIDISPINE_USERNAME="fakeuser"
+VIDISPINE_PASSWORD="fakepassword"
+
+ATOM_RESPONDER_DOWNLOAD_PATH="/path/to/download"
+ATOM_RESPONDER_DOWNLOAD_BUCKET="bucketname"
+
+ATOM_RESPONDER_ROLE_NAME="Fred"
+
+ATOM_TOOL_HOST='https://atomtool'
+ATOM_TOOL_SECRET='sauce'
+GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = "https://launchdetector"

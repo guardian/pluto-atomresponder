@@ -16,5 +16,6 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    path('kinesis/', include('kinesisresponder.urls'))
+    path('kinesis/', include('kinesisresponder.urls')),
+    path('atomresponder/', include('atomresponder.urls'))
 ]
