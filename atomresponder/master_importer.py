@@ -108,7 +108,6 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         :return:
         """
         from .media_atom import request_atom_resend, HttpError
-        from .tasks import timed_request_resend
         content = json.loads(record)
 
         logger.info(content)
@@ -144,10 +143,10 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
                         if attempt >= 10:
                             logger.error("{0}: still nothing after 10 attempts. Giving up.".format(content['atomId']))
                             raise
-                        logger.warning("{0}: Media atom tool responded with a 404 on attempt {1}: {2}. Retrying in 60s.".format(content['atomId'], attempt, e.content))
-                        timed_request_resend.apply_async(args=(record, approx_arrival),
-                                                         kwargs={'attempt': attempt+1},
-                                                         countdown=60)
+                        logger.warning("{0}: Media atom tool responded with a 404 on attempt {1}: {2}. Retry is NOT YET IMPLEMENTED.".format(content['atomId'], attempt, e.content))
+                        # timed_request_resend.apply_async(args=(record, approx_arrival),
+                        #                                  kwargs={'attempt': attempt+1},
+                        #                                  countdown=60)
                     else:
                         logger.exception("{0}: Could not request resync".format(content['atomId']))
 

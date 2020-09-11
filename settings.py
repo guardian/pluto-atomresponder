@@ -41,6 +41,14 @@ INSTALLED_APPS = [
     'atomresponder'
 ]
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = [
+    "--with-coverage",
+    "--cover-package=atomresponder",
+    "--cover-package=kinesisresponder",
+    "--with-xunit"
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -120,7 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = 'static/'
 VIDISPINE_URL="http://localhost"
 VIDISPINE_PORT=8080
 VIDISPINE_USERNAME="fakeuser"
