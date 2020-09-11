@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'kinesisresponder',
-    'atomresponder'
+    'atomresponder',
+    'rabbitmq'
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -123,6 +124,36 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'normal': {
+            'format': "{asctime} {name}|{funcName} [{levelname}] {message}",
+            'style': "{"
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'normal',
+        },
+    },
+    'loggers': {
+        'pika': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+        'rabbitmq': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
@@ -142,3 +173,8 @@ ATOM_RESPONDER_ROLE_NAME="Fred"
 ATOM_TOOL_HOST='https://atomtool'
 ATOM_TOOL_SECRET='sauce'
 GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = "https://launchdetector"
+
+RABBITMQ_HOST = "localhost"
+RABBITMQ_PORT = 5672
+RABBITMQ_USER = "guest"
+RABBITMQ_PASSWORD = "guest"
