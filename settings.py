@@ -44,7 +44,8 @@ INSTALLED_APPS = [
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     "--with-coverage",
-    "--cover-package=gnm_deliverables",
+    "--cover-package=atomresponder",
+    "--cover-package=kinesisresponder",
     "--with-xunit"
 ]
 

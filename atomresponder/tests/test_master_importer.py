@@ -70,6 +70,7 @@ class TestMasterImporter(django.test.TestCase):
         from atomresponder.models import PacFormXml
 
         from gnmvidispine.vs_item import VSItem
+        from gnmvidispine.vs_job import VSJob
         fake_data = {
             'atomId': "57AF5F3B-A556-448B-98E1-0628FDE9A5AC",
             's3Key': "path/to/s3data",
@@ -78,9 +79,16 @@ class TestMasterImporter(django.test.TestCase):
             'title': "Søméthîng wîth ëxtënded çharacters – like this. £"
         }
 
-        master_item = MagicMock(target=VSItem)
-        master_item.import_to_shape=MagicMock()
+        def mock_item_get(key):
+            if key=="itemId": return "VX-1234"
+            return None
 
+        import_job = MagicMock(target=VSJob)
+        import_job.name = "VX-554"
+        master_item = MagicMock(target=VSItem)
+        master_item.import_to_shape=MagicMock(return_value=import_job)
+        master_item.name = "VX-1234"
+        master_item.get = MagicMock(side_effect=mock_item_get)
         pac_processor = MagicMock(target=PacXmlProcessor)
         pac_processor.link_to_item = MagicMock()
 
@@ -109,15 +117,23 @@ class TestMasterImporter(django.test.TestCase):
         from atomresponder.models import PacFormXml
 
         from gnmvidispine.vs_item import VSItem
+        from gnmvidispine.vs_job import VSJob
         fake_data = {
             'atomId': "F6ED398D-9C71-4DBE-A519-C90F901CEB2A",
             's3Key': "path/to/s3data",
             's3Bucket': "sandcastles",
             'projectId': "VX-567"
         }
+        def mock_item_get(key):
+            if key=="itemId": return "VX-1234"
+            return None
 
+        import_job = MagicMock(target=VSJob)
+        import_job.name = "VX-554"
         master_item = MagicMock(target=VSItem)
-        master_item.import_to_shape=MagicMock()
+        master_item.import_to_shape=MagicMock(return_value=import_job)
+        master_item.name = "VX-1234"
+        master_item.get = MagicMock(side_effect=mock_item_get)
 
         pac_processor = MagicMock(target=PacXmlProcessor)
         pac_processor.link_to_item = MagicMock()
@@ -303,14 +319,12 @@ class TestMasterImporter(django.test.TestCase):
 
         with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
             with patch('atomresponder.media_atom.request_atom_resend') as mock_request_resend:
-                with patch('atomresponder.tasks.timed_request_resend') as mock_retry_task:
                     m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
                     m.get_item_for_atomid = MagicMock(return_value=None)
 
                     m.process(fake_message, 0)
 
                     mock_request_resend.assert_called_once_with("603CBB6C-A32D-4BD6-8053-CDEA99DC5406", settings.ATOM_TOOL_HOST, settings.ATOM_TOOL_SECRET)
-                    mock_retry_task.apply_async.assert_not_called()
 
     def test_process_outofsync_project_nomedia(self):
         """
@@ -337,14 +351,12 @@ class TestMasterImporter(django.test.TestCase):
 
         with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
             with patch('atomresponder.media_atom.request_atom_resend', side_effect=HttpError("http:/test-uri", 404, fake_response, {}, {})) as mock_request_resend:
-                with patch('atomresponder.tasks.timed_request_resend') as mock_retry_task:
                     m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
                     m.get_item_for_atomid = MagicMock(return_value=None)
 
                     m.process(fake_message, 0)
 
                     mock_request_resend.assert_called_once_with("603CBB6C-A32D-4BD6-8053-CDEA99DC5406", settings.ATOM_TOOL_HOST, settings.ATOM_TOOL_SECRET)
-                    mock_retry_task.apply_async.assert_called_once_with(args=('{"atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406", "type": "project-assigned"}', 0), countdown=60, kwargs={'attempt': 1})
 
     def test_process_outofsync_project_nomedia_giveup(self):
         """
@@ -371,7 +383,6 @@ class TestMasterImporter(django.test.TestCase):
 
         with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
             with patch('atomresponder.media_atom.request_atom_resend', side_effect=HttpError("http:/test-uri", 404, fake_response, {}, {})) as mock_request_resend:
-                with patch('atomresponder.tasks.timed_request_resend') as mock_retry_task:
                     m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
                     m.get_item_for_atomid = MagicMock(return_value=None)
 
@@ -379,7 +390,6 @@ class TestMasterImporter(django.test.TestCase):
                         m.process(fake_message, 0, attempt=10)
 
                     mock_request_resend.assert_called_once_with("603CBB6C-A32D-4BD6-8053-CDEA99DC5406", settings.ATOM_TOOL_HOST, settings.ATOM_TOOL_SECRET)
-                    mock_retry_task.apply_async.assert_not_called()
 
     def test_check_for_old_finished_jobs(self):
         """

@@ -17,7 +17,7 @@ django:
     - apk add postgresql-dev alpine-sdk linux-headers libffi-dev libxml2-dev libxslt-dev
     - git submodule init
     - git submodule update
-    - pip install -r requirements.txt django_nose
+    - pip install -r requirements.txt django_nose coverage
     - pip install -r gnmvidispine/requirements.txt
     - cd gnmvidispine && CIRCLE_BUILD_NUM=$CI_PIPELINE_IID python ./setup.py install && cd ..
     - python ./manage.py test
