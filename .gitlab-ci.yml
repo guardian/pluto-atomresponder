@@ -1,0 +1,39 @@
+stages:
+  - buildntest
+  - upload
+
+django:
+  image: python:3.8-alpine
+  stage: buildntest
+  services:
+    - postgres:9.6
+  variables:
+    POSTGRES_DB: pluto-deliverables
+    POSTGRES_USER: pluto-deliverables
+    POSTGRES_PASSWORD: pluto-deliverables
+    POSTGRES_HOST_AUTH_METHOD: trust
+    DB_HOST: "postgres"
+  script:
+    - apk add postgresql-dev alpine-sdk linux-headers libffi-dev libxml2-dev libxslt-dev
+    - git submodule init
+    - git submodule update
+    - pip install -r requirements.txt
+    - pip install -r gnmvidispine/requirements.txt
+    - cd gnmvidispine && CIRCLE_BUILD_NUM=$CI_PIPELINE_IID python ./setup.py install && cd ..
+    - python ./manage.py test
+
+upload:
+  image: "docker:19.03.11"
+  stage: upload
+  services:
+    - docker:dind
+  script:
+    - apk add git
+    - git submodule init
+    - git submodule update
+    - echo "version_commit = \"$CI_COMMIT_SHA\"" > version.py
+    - echo "version_branch = \"$CI_COMMIT_BRANCH\"" >> version.py
+    - echo "version_timestamp = \"$CI_COMMIT_TIMESTAMP\"" >> version.py
+    - docker build . -t guardianmultimedia/pluto-atomresponder:$CI_PIPELINE_IID
+    - docker login -u "${DOCKER_USER}" -p "${DOCKER_PAT}"
+    - docker push guardianmultimedia/pluto-atomresponder:$CI_PIPELINE_IID
