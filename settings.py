@@ -41,6 +41,13 @@ INSTALLED_APPS = [
     'atomresponder'
 ]
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = [
+    "--with-coverage",
+    "--cover-package=gnm_deliverables",
+    "--with-xunit"
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
