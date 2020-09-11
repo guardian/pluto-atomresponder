@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 import logging
 import pika
 from django.conf import settings
+import re
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +12,7 @@ class Command(BaseCommand):
     help = "Runs the responder program for in-cluster messages"
 
     @staticmethod
-    def connect_channel(channel, exchange_name, handler):
+    def connect_channel(exchange_name, handler, channel):
         """
         async callback that is used to connect a channel once it has been declared
         :param channel: channel to set up
@@ -18,11 +20,14 @@ class Command(BaseCommand):
         :param handler: a MessageProcessor class (NOT instance)
         :return:
         """
-        if not isinstance(channel, pika.channel.Channel):
-            raise TypeError
+        from pprint import pprint
+        pprint(channel)
+        pprint(exchange_name)
+        pprint(handler)
+        logger.info("Establishing connection to exchange {0} from {1}...".format(exchange_name, handler.__class__.__name__))
+        sanitised_routingkey = re.sub(r'[^\w\d]', '', handler.routing_key)
 
-        logger.info("Establishing connection to exchange {0}...".format(exchange_name))
-        queuename = "{0}-atomresponder".format(exchange_name)
+        queuename = "atomresponder-{0}".format(sanitised_routingkey)
         channel.exchange_declare(exchange=exchange_name, exchange_type="topic")
         channel.queue_declare(queuename)
         channel.queue_bind(queuename, exchange_name, routing_key=handler.routing_key)
@@ -42,11 +47,18 @@ class Command(BaseCommand):
         :return:
         """
         from rabbitmq.mappings import EXCHANGE_MAPPINGS
+        from pprint import pprint
         logger.info("Connection opened")
-        for exchange_name, handler in EXCHANGE_MAPPINGS.items():
-            connection.channel(on_open_callback=lambda channel: Command.connect_channel(channel, exchange_name, handler))
+        for i in range(0, len(EXCHANGE_MAPPINGS)):
+            # partial adjusts the argument list, adding the args here onto the _start_ of the list
+            # so the args are (exchange, handler, channel) not (channel, exchange, handler)
+            connection.channel(on_open_callback=partial(Command.connect_channel,
+                                                        EXCHANGE_MAPPINGS[i]["exchange"],
+                                                        EXCHANGE_MAPPINGS[i]["handler"])
+                               )
 
     def handle(self, *args, **options):
+        import time
         connection = pika.SelectConnection(
             pika.ConnectionParameters(
                 host=settings.RABBITMQ_HOST,
@@ -59,6 +71,8 @@ class Command(BaseCommand):
             on_open_callback=Command.channel_opened,
         )
 
-        logger.info("Handling messages")
+        # logger.info("Handling messages")
+        # while True:
+        #     time.sleep(3600)
         connection.ioloop.start()
 

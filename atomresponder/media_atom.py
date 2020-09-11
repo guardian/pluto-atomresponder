@@ -69,23 +69,26 @@ MSG_PROJECT_CREATED = 'project-created'
 MSG_PROJECT_UPDATED = 'project-updated'
 
 
-def update_kinesis(project_model, message_type):
+def update_kinesis(project_instance, message_type):
     """
     notifies media atom of a project update or create by pushing a message onto its kinesis stream.
     the kinesis stream is indicated in settings.
-    :param project_model: ProjectModel instance that has been created/updated
+    :param project_instance: named tuple instance describing the project that has been created/updated
     :param message_type: either `media_atom.MSG_PROJECT_CREATED` or `media_atom.MSG_PROJECT_UPDATED`
     :return:
     """
-    from portal.plugins.gnm_vidispine_utils.vs_helpers import site_id
     from boto import sts, kinesis
     from django.conf import settings
     import json, logging
 
     SESSION_NAME = 'pluto-media-atom-integration'
 
-    project_id = site_id + "-" + str(project_model.collection_id)
-    logger.info("{0}: Project updated, notifying {1} via role {2}".format(project_id, settings.MEDIA_ATOM_STREAM_NAME, settings.MEDIA_ATOM_ROLE_ARN))
+    project_id = str(project_instance.id)
+    logger.info("{0}: Project updated, notifying {1} via role {2}".format(project_id,
+                                                                          settings.MEDIA_ATOM_STREAM_NAME,
+                                                                          settings.MEDIA_ATOM_ROLE_ARN
+                                                                          )
+                )
 
     sts_connection = sts.STSConnection(
         aws_access_key_id=settings.MEDIA_ATOM_AWS_ACCESS_KEY_ID,
@@ -107,7 +110,7 @@ def update_kinesis(project_model, message_type):
     message_content = {
         'type': message_type,
         'id': project_id,
-        'title': project_model.gnm_project_headline,
+        'title': project_model.title,
         'status': project_model.gnm_project_status,
         'commissionId': site_id + "-" + str(project_model.commission.collection_id),
         'commissionTitle': project_model.commission.gnm_commission_title,
