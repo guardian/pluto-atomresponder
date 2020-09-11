@@ -47,6 +47,7 @@ NOSE_ARGS = [
     "--with-coverage",
     "--cover-package=atomresponder",
     "--cover-package=kinesisresponder",
+    "--cover-package=rabbitmq",
     "--with-xunit"
 ]
 

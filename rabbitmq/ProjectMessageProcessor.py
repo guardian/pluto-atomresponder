@@ -1,31 +1,12 @@
-import json
 import logging
 from .MessageProcessor import MessageProcessor
-from atomresponder.media_atom import update_kinesis, MSG_PROJECT_CREATED, MSG_PROJECT_UPDATED
+from .media_atom import update_kinesis, MSG_PROJECT_CREATED, MSG_PROJECT_UPDATED
 from .serializers import ProjectModelSerializer
+from .models import ProjectModel, CachedCommission
 logger = logging.getLogger(__name__)
-
-## see https://pynative.com/python-json-validation/
-PROJECT_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "number"},
-        "projectTypeId": {"type": "number"},
-        "title": {"type": "string"},
-        "created": {"type": "string"},
-        "user": {"type": "string"},
-        "workingGroupId": {"type": "string"},
-        "commissionId": {"type": "string"},
-        "deletable": {"type": "boolean"},
-        "sensitive": {"type": "boolean"},
-        "status": {"type": "string"},
-        "productionOffice": {"type": "string"},
-    }
-}
 
 
 class ProjectMessageProcessor(MessageProcessor):
-    #schema = PROJECT_SCHEMA
     serializer = ProjectModelSerializer
     routing_key = "core.project.*"
 
@@ -41,5 +22,12 @@ class ProjectMessageProcessor(MessageProcessor):
             logger.error("Received unknown message of type {0}".format(routing_key))
             raise ValueError("Unknown routing key")
 
-        logger.info("ProjectMessageProcessor got {0}".format(body))
-        update_kinesis(project_model, MSG_PROJECT_CREATED)
+        project_model = ProjectModel(body)
+        try:
+            cached_commission = CachedCommission.objects.filter(id=project_model.commissionId)
+
+            logger.info("ProjectMessageProcessor got {0}".format(project_model))
+            update_kinesis(project_model, cached_commission, message)
+        except CachedCommission.DoesNotExist:
+            logger.error("No cached commission data found for id {0}".format(project_model.commissionId))
+            raise
