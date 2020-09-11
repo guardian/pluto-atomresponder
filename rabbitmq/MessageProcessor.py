@@ -1,6 +1,8 @@
 import jsonschema
 import json
 import logging
+from rest_framework.parsers import JSONParser
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +13,7 @@ class MessageProcessor(object):
     """
     schema = None       # override this in a subclass
     routing_key = None  # override this in a subclass
+    serializer = None   # override this in a subclass
 
     def valid_message_receive(self, exchange_name, routing_key, delivery_tag, body):
         """
@@ -23,6 +26,19 @@ class MessageProcessor(object):
         """
         logger.debug("Received validated message from {0} via {1} with {2}: {3}".format(exchange_name, routing_key, delivery_tag, body))
         pass
+
+    def validate_with_schema(self, body):
+        content = json.loads(body.decode('UTF-8'))
+        jsonschema.validate(content, self.schema)   # throws an exception if the content does not validate
+        return content  #if we get to this line, then validation was successful
+
+    def validate_with_serializer(self, body):
+        content = JSONParser().parse(stream=io.BytesIO(body))
+        serializer_inst = self.serializer(data=content)
+        if serializer_inst.is_valid():
+            return serializer_inst.validated_data
+        else:
+            raise ValueError(str(serializer_inst.errors))
 
     def raw_message_receive(self, channel, method, properties, body):
         """
@@ -40,13 +56,15 @@ class MessageProcessor(object):
         validated_content = None
         try:
             logger.debug("Received message with delivery tag {2} from {0}: {1}".format(channel, body.decode('UTF-8'), tag))
-            unvalidated_content = json.loads(body.decode('UTF-8'))
 
-            if self.schema:
-                jsonschema.validate(unvalidated_content, self.schema)   # throws an exception if the content does not validate
+            if self.serializer:
+                validated_content = self.validate_with_serializer(body)
+            elif self.schema:
+                validated_content = self.validate_with_schema(body)
             else:
-                logger.warning("No schema present for validation in {0}, bad data might slip through".format(self.__class__.__name__))
-            validated_content = unvalidated_content  #if we get to this line, then validation was successful
+                logger.warning("No schema nor serializer resent for validation in {0}, cannot continue".format(self.__class__.__name__))
+                channel.basic_nack(delivery_tag=tag, requeue=True)
+
         except Exception as e:
             logger.exception("Message did not validate: ", exc_info=e)
             logger.error("Offending message content was {0}".format(body.decode('UTF-8')))

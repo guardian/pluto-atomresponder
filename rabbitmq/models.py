@@ -9,23 +9,6 @@ class CachedCommission(models.Model):
     commission_id = models.IntegerField(primary_key=True,null=False)
     title = models.TextField(max_length=32768)
 
-# ## see https://pynative.com/python-json-validation/
-# PROJECT_SCHEMA = {
-#     "type": "object",
-#     "properties": {
-#         "id": {"type": "number"},
-#         "projectTypeId": {"type": "number"},
-#         "title": {"type": "string"},
-#         "created": {"type": "string"},
-#         "user": {"type": "string"},
-#         "workingGroupId": {"type": "string"},
-#         "commissionId": {"type": "string"},
-#         "deletable": {"type": "boolean"},
-#         "sensitive": {"type": "boolean"},
-#         "status": {"type": "string"},
-#         "productionOffice": {"type": "string"},
-#     }
-# }
 
 class ProjectModel(models.Model):
     """
@@ -35,3 +18,14 @@ class ProjectModel(models.Model):
     project_id = models.IntegerField(primary_key=True,null=False)
     project_type_id = models.IntegerField()
     title = models.TextField(max_length=32768)
+    created = models.DateTimeField()
+    user = models.TextField(max_length=1024)
+    workingGroupId = models.IntegerField()
+    commissionId = models.IntegerField()
+    deletable = models.BooleanField()
+    sensitive = models.BooleanField()
+    status = models.TextField(max_length=32)
+    productionOffice = models.TextField(max_length=8)
+
+    def __str__(self):
+        return "{0} by {1} at {2}".format(self.title, self.user, self.project_id)
