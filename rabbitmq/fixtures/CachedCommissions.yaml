@@ -1,0 +1,5 @@
+- model: rabbitmq.CachedCommission
+  pk: 1
+  fields:
+    commission_id: 1
+    title: Rob's Rich Robberies
