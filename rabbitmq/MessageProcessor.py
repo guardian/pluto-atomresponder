@@ -34,7 +34,15 @@ class MessageProcessor(object):
 
     def validate_with_serializer(self, body):
         content = JSONParser().parse(stream=io.BytesIO(body))
-        serializer_inst = self.serializer(data=content)
+        if isinstance(content, list):
+            content_list = content
+        else:
+            content_list = [content]
+
+        if len(content_list)>1:
+            logger.warning("handling messages with >1 member is not implemented yet")
+        entry = content_list[0]
+        serializer_inst = self.serializer(data=entry)
         if serializer_inst.is_valid():
             return serializer_inst.validated_data
         else:

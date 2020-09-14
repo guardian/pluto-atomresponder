@@ -4,6 +4,7 @@ import pika
 from django.conf import settings
 import re
 from functools import partial
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +21,6 @@ class Command(BaseCommand):
         :param handler: a MessageProcessor class (NOT instance)
         :return:
         """
-        from pprint import pprint
-        pprint(channel)
-        pprint(exchange_name)
-        pprint(handler)
         logger.info("Establishing connection to exchange {0} from {1}...".format(exchange_name, handler.__class__.__name__))
         sanitised_routingkey = re.sub(r'[^\w\d]', '', handler.routing_key)
 
@@ -47,7 +44,6 @@ class Command(BaseCommand):
         :return:
         """
         from rabbitmq.mappings import EXCHANGE_MAPPINGS
-        from pprint import pprint
         logger.info("Connection opened")
         for i in range(0, len(EXCHANGE_MAPPINGS)):
             # partial adjusts the argument list, adding the args here onto the _start_ of the list
@@ -56,6 +52,18 @@ class Command(BaseCommand):
                                                         EXCHANGE_MAPPINGS[i]["exchange"],
                                                         EXCHANGE_MAPPINGS[i]["handler"])
                                )
+
+    @staticmethod
+    def connection_closed(connection, error):
+        """
+        async callback that is invoked when the connection fails.
+        print an error and shut down, this will then get detected as a crash-loop state
+        :param connection:
+        :param error:
+        :return:
+        """
+        logger.error("RabbitMQ connection failed: {0}".format(str(error)))
+        os.exit(1)
 
     def handle(self, *args, **options):
         import time

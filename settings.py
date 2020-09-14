@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -87,8 +87,12 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get("DB_NAME", "atomresponder"),
+        'USER': os.environ.get("DB_USER", "atomresponder"),
+        'PASSWORD': os.environ.get("DB_PASSWD", "atomresponder"),
+        'HOST': os.environ.get("DB_HOST", 'localhost'),
+        'PORT': os.environ.get("DB_PORT", "5432"),
     }
 }
 
@@ -161,10 +165,11 @@ LOGGING = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static/'
-VIDISPINE_URL="http://localhost"
-VIDISPINE_PORT=8080
-VIDISPINE_USERNAME="fakeuser"
-VIDISPINE_PASSWORD="fakepassword"
+
+### Vidispine configuration. These should be the locations that the _server portion_ can access VS, not the browser.
+VIDISPINE_URL=os.environ.get("VIDISPINE_URL","http://vidispine.local:80")
+VIDISPINE_USERNAME=os.environ.get("VIDISPINE_USER","admin")
+VIDISPINE_PASSWORD=os.environ.get("VIDISPINE_PASSWORD","admin")
 
 ATOM_RESPONDER_DOWNLOAD_PATH="/path/to/download"
 ATOM_RESPONDER_DOWNLOAD_BUCKET="bucketname"
@@ -175,7 +180,10 @@ ATOM_TOOL_HOST='https://atomtool'
 ATOM_TOOL_SECRET='sauce'
 GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = "https://launchdetector"
 
-RABBITMQ_HOST = "localhost"
-RABBITMQ_PORT = 5672
-RABBITMQ_USER = "guest"
-RABBITMQ_PASSWORD = "guest"
+### Message queue configuration. These should be the locations that the _server portion_ can access Rabbitmq
+RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST", "localhost")
+RABBITMQ_PORT = int(os.environ.get("RABBITMQ_PORT", "5672"))
+RABBITMQ_VHOST = os.environ.get("RABBITMQ_VHOST", "prexit")
+RABBITMQ_EXCHANGE = 'pluto-atomresponder'
+RABBITMQ_USER = os.environ.get("RABBITMQ_USER","pluto-ng")
+RABBITMQ_PASSWORD = os.environ.get("RABBITMQ_PASSWD","")

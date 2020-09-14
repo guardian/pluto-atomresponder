@@ -6,7 +6,7 @@ class CachedCommission(models.Model):
     Represents the data that we need to know about a commission.
     This is saved into the database
     """
-    commission_id = models.IntegerField(primary_key=True,null=False)
+    id = models.IntegerField(primary_key=True,null=False)
     title = models.TextField(max_length=32768)
 
 

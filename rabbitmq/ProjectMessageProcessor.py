@@ -26,7 +26,7 @@ class ProjectMessageProcessor(MessageProcessor):
         project_model = ProjectModel(**body)
         try:
             pprint(project_model.__dict__)
-            cached_commission = CachedCommission.objects.get(commission_id=project_model.commissionId)
+            cached_commission = CachedCommission.objects.get(id=project_model.commissionId)
 
             logger.info("ProjectMessageProcessor got {0}".format(project_model))
             update_kinesis(project_model, cached_commission, message)
