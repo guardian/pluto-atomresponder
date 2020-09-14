@@ -11,7 +11,7 @@ class TestCommissionMessageProcessor(TestCase):
         commissionMessageProcessor should save the provided model instance if the routing key is a ".create" one
         :return:
         """
-        mock_body = MagicMock(target=OrderedDict)
+        mock_body = OrderedDict([("id",1234),("title","Rhubarb")])
         mock_model = MagicMock(target=CachedCommission)
         mock_model.save = MagicMock()
         mock_model.delete = MagicMock()
@@ -19,7 +19,7 @@ class TestCommissionMessageProcessor(TestCase):
         with patch("rabbitmq.CommissionMessageProcessor.CachedCommission", return_value=mock_model) as mock_factory:
             to_test = CommissionMessageProcessor()
             to_test.valid_message_receive("my_exchange","core.commission.create","sometag",mock_body)
-            mock_factory.assert_called_once_with(mock_body)
+            mock_factory.assert_called_once_with(id=1234,title="Rhubarb")
             mock_model.save.assert_called_once_with()
             mock_model.delete.assert_not_called()
 
@@ -28,7 +28,7 @@ class TestCommissionMessageProcessor(TestCase):
         commissionMessageProcessor should save the provided model instance if the routing key is a ".update" one
         :return:
         """
-        mock_body = MagicMock(target=OrderedDict)
+        mock_body = OrderedDict([("id",1234),("title","Rhubarb")])
         mock_model = MagicMock(target=CachedCommission)
         mock_model.save = MagicMock()
         mock_model.delete = MagicMock()
@@ -36,7 +36,7 @@ class TestCommissionMessageProcessor(TestCase):
         with patch("rabbitmq.CommissionMessageProcessor.CachedCommission", return_value=mock_model) as mock_factory:
             to_test = CommissionMessageProcessor()
             to_test.valid_message_receive("my_exchange","core.commission.update","sometag",mock_body)
-            mock_factory.assert_called_once_with(mock_body)
+            mock_factory.assert_called_once_with(id=1234,title="Rhubarb")
             mock_model.save.assert_called_once_with()
             mock_model.delete.assert_not_called()
 
@@ -45,7 +45,7 @@ class TestCommissionMessageProcessor(TestCase):
         commissionMessageProcessor should delete the provided model instance if the routing key is a ".delete" one
         :return:
         """
-        mock_body = MagicMock(target=OrderedDict)
+        mock_body = OrderedDict([("id",1234),("title","Rhubarb")])
         mock_model = MagicMock(target=CachedCommission)
         mock_model.save = MagicMock()
         mock_model.delete = MagicMock()
@@ -53,7 +53,7 @@ class TestCommissionMessageProcessor(TestCase):
         with patch("rabbitmq.CommissionMessageProcessor.CachedCommission", return_value=mock_model) as mock_factory:
             to_test = CommissionMessageProcessor()
             to_test.valid_message_receive("my_exchange","core.commission.delete","sometag",mock_body)
-            mock_factory.assert_called_once_with(mock_body)
+            mock_factory.assert_called_once_with(id=1234,title="Rhubarb")
             mock_model.save.assert_not_called()
             mock_model.delete.assert_called_once_with()
 
@@ -63,7 +63,7 @@ class TestCommissionMessageProcessor(TestCase):
          routing key is not recognised
         :return:
         """
-        mock_body = MagicMock(target=OrderedDict)
+        mock_body = OrderedDict([("id",1234),("title","Rhubarb")])
         mock_model = MagicMock(target=CachedCommission)
         mock_model.save = MagicMock()
         mock_model.delete = MagicMock()
@@ -71,6 +71,6 @@ class TestCommissionMessageProcessor(TestCase):
         with patch("rabbitmq.CommissionMessageProcessor.CachedCommission", return_value=mock_model) as mock_factory:
             to_test = CommissionMessageProcessor()
             to_test.valid_message_receive("my_exchange","core.commission.fdsfsfsg","sometag",mock_body)
-            mock_factory.assert_called_once_with(mock_body)
+            mock_factory.assert_called_once_with(id=1234,title="Rhubarb")
             mock_model.save.assert_not_called()
             mock_model.delete.assert_not_called()

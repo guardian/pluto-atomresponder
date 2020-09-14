@@ -5,7 +5,6 @@ from mock import MagicMock, patch
 from collections import OrderedDict
 import pika
 
-
 class TestMessageProcessorRawReceive(TestCase):
     def test_raw_receieve_valid_commissiondata(self):
         """
@@ -25,7 +24,7 @@ class TestMessageProcessorRawReceive(TestCase):
         mock_method.delivery_tag = "deltag"
         mock_method.routing_key = "routing.key"
         mock_properties = {}
-        mock_content = b"""{"id":12345,"title":"Some title"}"""
+        mock_content = b"""[{"id":12345,"title":"Some title"}]"""
 
         to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
         to_test.valid_message_receive.assert_called_once_with("exchange_name",
