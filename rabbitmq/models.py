@@ -15,8 +15,8 @@ class ProjectModel(models.Model):
     Represents the data that we get sent about a project.
     This is NOT saved to the database but treated purely transiently
     """
-    project_id = models.IntegerField(primary_key=True,null=False)
-    project_type_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True,null=False)
+    projectTypeId = models.IntegerField()
     title = models.TextField(max_length=32768)
     created = models.DateTimeField()
     user = models.TextField(max_length=1024)
@@ -28,4 +28,4 @@ class ProjectModel(models.Model):
     productionOffice = models.TextField(max_length=8)
 
     def __str__(self):
-        return "{0} by {1} at {2}".format(self.title, self.user, self.project_id)
+        return "{0} by {1} at {2}".format(self.title, self.user, self.id)

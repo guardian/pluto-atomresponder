@@ -171,16 +171,24 @@ VIDISPINE_URL=os.environ.get("VIDISPINE_URL","http://vidispine.local:80")
 VIDISPINE_USERNAME=os.environ.get("VIDISPINE_USER","admin")
 VIDISPINE_PASSWORD=os.environ.get("VIDISPINE_PASSWORD","admin")
 
-ATOM_RESPONDER_DOWNLOAD_PATH="/path/to/download"
-ATOM_RESPONDER_DOWNLOAD_BUCKET="bucketname"
+### Local cache locations
+ATOM_RESPONDER_DOWNLOAD_PATH=os.environ.get("LOCAL_DOWNLOAD_PATH", "/path/to/download")
+ATOM_RESPONDER_DOWNLOAD_BUCKET=os.environ.get("DOWNLOAD_BUCKET", "bucketname")
 
-ATOM_RESPONDER_ROLE_NAME="Fred"
+### Connection to Kinesis
+ATOM_RESPONDER_ROLE_NAME=os.environ.get("AWS_ROLE","Fred")
+MEDIA_ATOM_STREAM_NAME=os.environ.get("MEDIA_ATOM_STREAM","streamname") #Kinesis stream to connect to
+MEDIA_ATOM_ROLE_ARN=os.environ.get("MEDIA_ATOM_ROLE_ARN","somearn")     #Role to use when connecting to the stream
+MEDIA_ATOM_AWS_ACCESS_KEY_ID=os.environ.get("MEDIA_ATOM_AWS_ACCESS_KEY_ID","somekey")   #AWS creds to use when assuming the role
+MEDIA_ATOM_AWS_SECRET_ACCESS_KEY=os.environ.get("MEDIA_ATOM_AWS_SECRET_ACCESS_KEY","somesecret")
+SESSION_NAME="pluto-atomresponder"  #Session description for temporary credentials associated with role
 
+### Connection to media atom tool, for resending
 ATOM_TOOL_HOST='https://atomtool'
 ATOM_TOOL_SECRET='sauce'
 GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = "https://launchdetector"
 
-### Message queue configuration. These should be the locations that the _server portion_ can access Rabbitmq
+### Message queue configuration.
 RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST", "localhost")
 RABBITMQ_PORT = int(os.environ.get("RABBITMQ_PORT", "5672"))
 RABBITMQ_VHOST = os.environ.get("RABBITMQ_VHOST", "prexit")

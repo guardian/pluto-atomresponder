@@ -19,8 +19,8 @@ class TestProjectMessageProcessor(TestCase):
         :return:
         """
         data = OrderedDict(
-            project_id=1234,
-            project_type_id=1,
+            id=1234,
+            projectTypeId=1,
             title="Some project title",
             created=datetime.datetime(2020,1,2,3,4,5,tzinfo=pytz.UTC),
             user="Fred",
@@ -47,8 +47,8 @@ class TestProjectMessageProcessor(TestCase):
         :return:
         """
         data = OrderedDict(
-            project_id=1234,
-            project_type_id=1,
+            id=1234,
+            projectTypeId=1,
             title="Some project title",
             created=datetime.datetime(2020,1,2,3,4,5,tzinfo=pytz.UTC),
             user="Fred",
@@ -75,8 +75,8 @@ class TestProjectMessageProcessor(TestCase):
         :return:
         """
         data = OrderedDict(
-            project_id=1234,
-            project_type_id=1,
+            id=1234,
+            projectTypeId=1,
             title="Some project title",
             created=datetime.datetime(2020,1,2,3,4,5,tzinfo=pytz.UTC),
             user="Fred",
@@ -102,8 +102,8 @@ class TestProjectMessageProcessor(TestCase):
         :return:
         """
         data = OrderedDict(
-            project_id=1234,
-            project_type_id=1,
+            id=1234,
+            projectTypeId=1,
             title="Some project title",
             created=datetime.datetime(2020,1,2,3,4,5,tzinfo=pytz.UTC),
             user="Fred",

@@ -1,11 +1,10 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, Serializer, IntegerField, CharField
 from .models import CachedCommission, ProjectModel
 
 
-class CachedCommissionSerializer(ModelSerializer):
-    class Meta:
-        model = CachedCommission
-        fields = "__all__"
+class CachedCommissionSerializer(Serializer):
+    id = IntegerField()
+    title = CharField(max_length=32768)
 
 
 class ProjectModelSerializer(ModelSerializer):
