@@ -48,10 +48,10 @@ def update_kinesis(project_instance: ProjectModel, commission_instance: CachedCo
 
     message_content = {
         'type': message_type,
-        'id': project_id,
+        'id': str(project_id),
         'title': project_instance.title,
         'status': project_instance.status,
-        'commissionId': project_instance.commissionId,
+        'commissionId': str(project_instance.commissionId),
         'commissionTitle': commission_instance.title,
         'productionOffice': project_instance.productionOffice,
         'created': project_instance.created.isoformat()
