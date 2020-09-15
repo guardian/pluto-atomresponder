@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'kinesisresponder',
-    'atomresponder'
+    'atomresponder',
+    'rabbitmq'
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -46,6 +47,7 @@ NOSE_ARGS = [
     "--with-coverage",
     "--cover-package=atomresponder",
     "--cover-package=kinesisresponder",
+    "--cover-package=rabbitmq",
     "--with-xunit"
 ]
 
@@ -85,8 +87,12 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get("DB_NAME", "atomresponder"),
+        'USER': os.environ.get("DB_USER", "atomresponder"),
+        'PASSWORD': os.environ.get("DB_PASSWD", "atomresponder"),
+        'HOST': os.environ.get("DB_HOST", 'localhost'),
+        'PORT': os.environ.get("DB_PORT", "5432"),
     }
 }
 
@@ -123,22 +129,69 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'normal': {
+            'format': "{asctime} {name}|{funcName} [{levelname}] {message}",
+            'style': "{"
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'normal',
+        },
+    },
+    'loggers': {
+        'pika': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+        'rabbitmq': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static/'
-VIDISPINE_URL="http://localhost"
-VIDISPINE_PORT=8080
-VIDISPINE_USERNAME="fakeuser"
-VIDISPINE_PASSWORD="fakepassword"
 
-ATOM_RESPONDER_DOWNLOAD_PATH="/path/to/download"
-ATOM_RESPONDER_DOWNLOAD_BUCKET="bucketname"
+### Vidispine configuration. These should be the locations that the _server portion_ can access VS, not the browser.
+VIDISPINE_URL=os.environ.get("VIDISPINE_URL","http://vidispine.local:80")
+VIDISPINE_USERNAME=os.environ.get("VIDISPINE_USER","admin")
+VIDISPINE_PASSWORD=os.environ.get("VIDISPINE_PASSWORD","admin")
 
-ATOM_RESPONDER_ROLE_NAME="Fred"
+### Local cache locations
+ATOM_RESPONDER_DOWNLOAD_PATH=os.environ.get("LOCAL_DOWNLOAD_PATH", "/path/to/download")
+ATOM_RESPONDER_DOWNLOAD_BUCKET=os.environ.get("DOWNLOAD_BUCKET", "bucketname")
 
+### Connection to Kinesis
+ATOM_RESPONDER_ROLE_NAME=os.environ.get("AWS_ROLE","Fred")
+MEDIA_ATOM_STREAM_NAME=os.environ.get("MEDIA_ATOM_STREAM","streamname") #Kinesis stream to connect to
+MEDIA_ATOM_ROLE_ARN=os.environ.get("MEDIA_ATOM_ROLE_ARN","somearn")     #Role to use when connecting to the stream
+MEDIA_ATOM_AWS_ACCESS_KEY_ID=os.environ.get("MEDIA_ATOM_AWS_ACCESS_KEY_ID","somekey")   #AWS creds to use when assuming the role
+MEDIA_ATOM_AWS_SECRET_ACCESS_KEY=os.environ.get("MEDIA_ATOM_AWS_SECRET_ACCESS_KEY","somesecret")
+SESSION_NAME="pluto-atomresponder"  #Session description for temporary credentials associated with role
+
+### Connection to media atom tool, for resending
 ATOM_TOOL_HOST='https://atomtool'
 ATOM_TOOL_SECRET='sauce'
 GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = "https://launchdetector"
+
+### Message queue configuration.
+RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST", "localhost")
+RABBITMQ_PORT = int(os.environ.get("RABBITMQ_PORT", "5672"))
+RABBITMQ_VHOST = os.environ.get("RABBITMQ_VHOST", "prexit")
+RABBITMQ_EXCHANGE = 'pluto-atomresponder'
+RABBITMQ_USER = os.environ.get("RABBITMQ_USER","pluto-ng")
+RABBITMQ_PASSWORD = os.environ.get("RABBITMQ_PASSWD","")

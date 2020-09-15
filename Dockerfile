@@ -8,10 +8,12 @@ RUN apk add --no-cache alpine-sdk linux-headers openssl-dev libffi-dev mailcap l
     cd /tmp/gnmvidispine && python /tmp/gnmvidispine/setup.py install && cd /opt/pluto-atomresponder && \
     pip install -r requirements.txt uwsgi && \
     rm -rf /tmp/gnmvidispine && \
-    apk --no-cache del alpine-sdk linux-headers openssl-dev libffi-dev postgresql-dev libxml2-dev libxslt-dev
+    apk --no-cache del alpine-sdk linux-headers openssl-dev libffi-dev postgresql-dev libxml2-dev libxslt-dev && \
+    rm -rf /root/.cache
 COPY *.py /opt/pluto-atomresponder/
 ADD --chown=nobody:root atomresponder /opt/pluto-atomresponder/atomresponder/
 ADD --chown=nobody:root kinesisresponder /opt/pluto-atomresponder/kinesisresponder/
+ADD --chown=nobody:root rabbitmq /opt/pluto-atomresponder/rabbitmq/
 ENV PYTHONPATH=/opt/pluto-atomresponder
 RUN mkdir static && python manage.py collectstatic --noinput
 USER nobody
