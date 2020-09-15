@@ -1,4 +1,3 @@
-import json
 import logging
 from .MessageProcessor import MessageProcessor
 from .serializers import CachedCommissionSerializer

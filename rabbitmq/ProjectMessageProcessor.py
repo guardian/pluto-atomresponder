@@ -11,7 +11,6 @@ class ProjectMessageProcessor(MessageProcessor):
     routing_key = "core.project.*"
 
     def valid_message_receive(self, exchange_name, routing_key, delivery_tag, body):
-        from pprint import pprint
         message = None
         if "create" in routing_key:
             logger.debug("Received project created message")
@@ -25,7 +24,6 @@ class ProjectMessageProcessor(MessageProcessor):
 
         project_model = ProjectModel(**body)
         try:
-            pprint(project_model.__dict__)
             cached_commission = CachedCommission.objects.get(id=project_model.commissionId)
 
             logger.info("ProjectMessageProcessor got {0}".format(project_model))
