@@ -80,11 +80,12 @@ class TestMessageProcessorRawReceive(TestCase):
         mock_properties = {}
         mock_content = b"""{"id":12345,"title":"Some title","junk_field":"junk"}"""
 
-        to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
-        to_test.valid_message_receive.assert_called_once_with("exchange_name",
-                                                              "routing.key",
-                                                              "deltag",
-                                                              OrderedDict([('id', 12345), ('title', 'Some title')])
-                                                              )
-        mock_channel.basic_ack.assert_not_called()
-        mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag", requeue=True)
+        with self.assertRaises(ValueError):
+            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+            to_test.valid_message_receive.assert_called_once_with("exchange_name",
+                                                                  "routing.key",
+                                                                  "deltag",
+                                                                  OrderedDict([('id', 12345), ('title', 'Some title')])
+                                                                  )
+            mock_channel.basic_ack.assert_not_called()
+            mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag", requeue=True)
