@@ -6,6 +6,7 @@ from .s3_mixin import S3Mixin, FileDoesNotExist
 from .vs_mixin import VSMixin
 import logging
 from gnmvidispine.vs_item import VSItem, VSNotFound
+from rabbitmq.models import LinkedProject
 from datetime import datetime
 import atomresponder.constants as const
 import re
@@ -54,11 +55,25 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         routingkey = "atomresponder.atom.{}".format(type)
 
+        try:
+            linked_project = LinkedProject.objects.get(project_id=int(content['projectId']))
+            commission_id = linked_project.commission.id
+        except ValueError:
+            logger.error("Project ID {} does not convert to integer!".format(content['projectId']))
+            commission_id = -1
+        except KeyError:
+            logger.error("Content has no projectId? invalid message.")
+            raise RuntimeError("Invalid message")
+        except LinkedProject.DoesNotExist:
+            commission_id = -1
+
         message_to_send = {
             **content,
             "itemId": item_id,
-            "jobId": job_id
+            "jobId": job_id,
+            "commissionId": commission_id
         }
+
         while True:
             try:
                 logger.info("Updating exchange {} with routing-key {}...".format(settings.RABBITMQ_EXCHANGE, routingkey))

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rabbitmq.ProjectMessageProcessor import ProjectMessageProcessor, CachedCommission
+from rabbitmq.ProjectMessageProcessor import ProjectMessageProcessor, CachedCommission, LinkedProject
 from rabbitmq.models import ProjectModel
 from mock import MagicMock, patch
 from collections import OrderedDict
@@ -43,7 +43,7 @@ class TestProjectMessageProcessor(TestCase):
     def test_update(self):
         """
         ProjectMessageProcessor should look up the associated commission and call out to update_kinesis with an
-        update
+        update having cached the project link record
         :return:
         """
         data = OrderedDict(
@@ -62,11 +62,16 @@ class TestProjectMessageProcessor(TestCase):
 
         expected_commission = CachedCommission.objects.get(pk=1)
 
+        with self.assertRaises(LinkedProject.DoesNotExist):
+            LinkedProject.objects.get(project_id=1234)
+
         with patch("rabbitmq.ProjectMessageProcessor.update_kinesis") as mock_update_kinesis:
             to_test = ProjectMessageProcessor()
             to_test.valid_message_receive("my_exchange","core.project.update","sometag",data)
 
             mock_update_kinesis.assert_called_once_with(ProjectModel(**data), expected_commission, "project-updated")
+            linked_project = LinkedProject.objects.get(project_id=1234)
+            self.assertEqual(linked_project.commission.id, data["commissionId"])
 
     def test_invalid(self):
         """
