@@ -2,6 +2,7 @@
 import django.test
 from gnmvidispine.vs_collection import VSCollection
 from mock import MagicMock, patch
+import pika
 
 class TestMasterImporter(django.test.TestCase):
     fixtures = [
@@ -94,15 +95,22 @@ class TestMasterImporter(django.test.TestCase):
 
         pacxml = PacFormXml.objects.get(atom_id=fake_data['atomId'])
 
+        mocked_channel = MagicMock(target=pika.spec.Channel)
+        mocked_connection = MagicMock(target=pika.spec.Connection)
 
-        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
-            with patch('atomresponder.pac_xml.PacXmlProcessor', return_value=pac_processor):
-                m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
-                m.download_to_local_location = MagicMock(return_value="/path/to/local/file")
+        with patch('atomresponder.master_importer.MasterImportResponder.setup_pika_channel',
+                   return_value=(mocked_connection, mocked_channel)
+                   ):
+            with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
+                with patch('atomresponder.pac_xml.PacXmlProcessor', return_value=pac_processor):
+                    m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
+                    m.download_to_local_location = MagicMock(return_value="/path/to/local/file")
 
-                m.import_new_item(master_item, fake_data)
-                pac_processor.link_to_item.assert_called_once_with(pacxml, master_item)
-                master_item.import_to_shape.assert_called_once_with(essence=True, jobMetadata={'gnm_source': 'media_atom'}, priority='HIGH', shape_tag='lowres', uri='file:///path/to/local/file')
+                    m.import_new_item(master_item, fake_data)
+                    pac_processor.link_to_item.assert_called_once_with(pacxml, master_item)
+                    master_item.import_to_shape.assert_called_once_with(essence=True, jobMetadata={'gnm_source': 'media_atom'}, priority='HIGH', shape_tag='lowres', uri='file:///path/to/local/file')
+                    mocked_channel.basic_publish.assert_called_once()
+                    mocked_connection.close.assert_called_once()
 
     def test_import_new_item_nopac(self):
         """
@@ -121,6 +129,7 @@ class TestMasterImporter(django.test.TestCase):
             's3Bucket': "sandcastles",
             'projectId': "VX-567"
         }
+
         def mock_item_get(key):
             if key=="itemId": return "VX-1234"
             return None
@@ -139,18 +148,20 @@ class TestMasterImporter(django.test.TestCase):
         with self.assertRaises(PacFormXml.DoesNotExist):
             PacFormXml.objects.get(atom_id=fake_data['atomId'])
 
-        project_collection = MagicMock(target=VSCollection)
-        project_collection.addToCollection = MagicMock()
+        mocked_channel = MagicMock(target=pika.spec.Channel)
+        mocked_connection = MagicMock(target=pika.spec.Connection)
 
-        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
-            with patch('atomresponder.pac_xml.PacXmlProcessor', return_value=pac_processor):
-                m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
-                m.download_to_local_location = MagicMock(return_value="/path/to/local/file")
+        with patch('atomresponder.master_importer.MasterImportResponder.setup_pika_channel',
+                   return_value=(mocked_connection, mocked_channel)
+                   ):
+            with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
+                with patch('atomresponder.pac_xml.PacXmlProcessor', return_value=pac_processor):
+                    m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
+                    m.download_to_local_location = MagicMock(return_value="/path/to/local/file")
 
-                m.import_new_item(master_item, fake_data)
-                pac_processor.link_to_item.assert_not_called()
-                project_collection.addToCollection.assert_called_once_with(master_item)
-                master_item.import_to_shape.assert_called_once_with(essence=True, jobMetadata={'gnm_source': 'media_atom'}, priority='HIGH', shape_tag='lowres', uri='file:///path/to/local/file')
+                    m.import_new_item(master_item, fake_data)
+                    pac_processor.link_to_item.assert_not_called()
+                    master_item.import_to_shape.assert_called_once_with(essence=True, jobMetadata={'gnm_source': 'media_atom'}, priority='HIGH', shape_tag='lowres', uri='file:///path/to/local/file')
 
     def test_ingest_pac_xml(self):
         from atomresponder.master_importer import MasterImportResponder

@@ -170,6 +170,8 @@ STATIC_ROOT = 'static/'
 VIDISPINE_URL=os.environ.get("VIDISPINE_URL","http://vidispine.local:80")
 VIDISPINE_USERNAME=os.environ.get("VIDISPINE_USER","admin")
 VIDISPINE_PASSWORD=os.environ.get("VIDISPINE_PASSWORD","admin")
+# this is the location that Vidispine can send messages to us
+VIDISPINE_CALLBACK_URL=os.environ.get("VIDISPINE_CALLBACK_URL", None)
 
 ### Local cache locations
 ATOM_RESPONDER_DOWNLOAD_PATH=os.environ.get("LOCAL_DOWNLOAD_PATH", "/path/to/download")

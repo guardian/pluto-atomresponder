@@ -18,13 +18,12 @@ def _get_callback_url(use_auth=None):
         auth = True
 
     # use callback from settings
-    if hasattr(settings, "PLUTO_CALLBACK_URL"):
+    if hasattr(settings, "VIDISPINE_CALLBACK_URL"):
         v = settings.PLUTO_CALLBACK_URL
     else:
-        # fallback to vidispine address
-        v = settings.VIDISPINE_URL
+        raise ValueError("You must set VIDISPINE_CALLBACK_URL in the settings")
     v = v.strip()
-    logger.warning('Failed to auto-detect IP address. Reverting to %s' % v)
+
     if not v.endswith('/'):
         v = v + '/'
     if auth and v.startswith('http://'):

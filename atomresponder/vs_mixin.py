@@ -23,7 +23,8 @@ class VSMixin(object):
         """
         try:
             item = VSItem(url=settings.VIDISPINE_URL, user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
-            item.populate(atomid)   #this will work if the item has an external id set to the atom id. this is done in `set_project_fields_for_master`
+            item.populate(atomid)   # this will work if the item has an external id set to the atom id.
+                                    #this is done in `create_placeholder_for_atomid`
             return item
         except VSNotFound:
             s = VSItemSearch(url=settings.VIDISPINE_URL,user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
@@ -45,22 +46,13 @@ class VSMixin(object):
         """
         Creates a placeholder and returns a VSItem object for it
         :param atomid: atom ID string
+        :param filename: path of the file to import
+        :param project_id: ID number of the project that the video is associated with
         :param title: title of the new video
         :return: VSItem object
         """
         item = VSItem(url=settings.VIDISPINE_URL,user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
 
-        # metadata = {const.GNM_TYPE: 'Master',
-        #             'title': title,
-        #             const.GNM_MASTERS_WEBSITE_HEADLINE: title,
-        #             const.GNM_MASTERS_MEDIAATOM_ATOMID: atomid,
-        #             const.GNM_MASTERS_GENERIC_TITLEID: atomid,
-        #             const.GNM_ASSET_CATEGORY: "Master",
-        #             const.GNM_MASTERS_MEDIAATOM_UPLOADEDBY: user,
-        #             const.GNM_PROJECT_HEADLINE: project_name_reference,
-        #             const.GNM_COMMISSION_TITLE: commission_name_ref
-        #             }
-        #
         basemeta = {
             const.GNM_ASSET_CATEGORY: "Deliverable",
             const.GNM_ASSET_ORIGINAL_FILENAME: filename,
@@ -70,6 +62,7 @@ class VSMixin(object):
         }
 
         builder = item.get_metadata_builder()
+        builder.addMeta({'title': title})
         builder.addGroup(const.GROUP_GNM_ASSET, basemeta)
         # this needs to get filled in by deliverables
         # builder.addGroup(const.GROUP_GNM_DELIVERABLE, {
@@ -80,28 +73,6 @@ class VSMixin(object):
         item.createPlaceholder(mdbytes.decode("UTF-8"))
         item.add_external_id(atomid)
         return item
-
-    @staticmethod
-    def set_project_fields_for_master(vsitem, parent_project):
-        """
-        Sets the metadata reference fields on the given master. Raises VSExceptions if the operations fail.
-        :param vsitem: populated VSItem of the master to update
-        :param parent_project: populated VSCollection of the project it is being added to
-        :return: the item passed in
-        """
-        from gnmvidispine.vs_metadata import VSMetadataReference
-        project_name_attribs = parent_project.get_metadata_attributes(const.GNM_PROJECT_HEADLINE)
-        project_name_reference = VSMetadataReference(uuid=project_name_attribs[0].uuid)
-
-        commission_name_attribs = parent_project.get_metadata_attributes(const.GNM_COMMISSION_TITLE)
-        commission_name_ref = VSMetadataReference(uuid=commission_name_attribs[0].uuid)
-
-        metadata = {
-            const.GNM_PROJECT_HEADLINE: project_name_reference,
-            const.GNM_COMMISSION_TITLE: commission_name_ref
-        }
-        vsitem.set_metadata(metadata, group="Asset")
-        return vsitem
 
     def get_collection_for_id(self, projectid, expected_type="Project"):
         """
