@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = "Request a resend of the specific atom ID. This will cause a new version to be created in pluto."
 
     def handle(self, *args, **options):
-        from portal.plugins.gnmatomresponder.media_atom import request_atom_resend
+        from atomresponder.media_atom import request_atom_resend
 
         if len(args)!=1:
             print("ERROR: You must specify an atom ID as the only commandline argument")

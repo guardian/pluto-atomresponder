@@ -9,6 +9,8 @@ from gnmvidispine.vs_item import VSItem, VSNotFound
 from datetime import datetime
 import atomresponder.constants as const
 import re
+import pika
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -20,18 +22,53 @@ make_filename_re = re.compile(r'[^\w\d\.]')
 
 
 class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
-    def update_pluto_record(self, item_id, project_id):
-        ###FIXME: needs to send the message to pluto-deliverables
-        # import traceback
-        # try:
-        #     from portal.plugins.gnm_masters.signals import master_external_update
-        #
-        #     master_external_update.send(sender=self.__class__, item_id=item_id, project_id=project_id)
-        # except ImportError as e:
-        #     logger.error("Unable to signal master update: {0}".format(e))
-        # except Exception as e:
-        #     logger.error("An error happened when outputting master_external_create signal: {0}".format(traceback.format_exc()))
-        raise RuntimeError("not yet implemented")
+    def __init__(self, *args, **kwargs):
+        super(MasterImportResponder, self).__init__(*args, **kwargs)
+        self._pika_client = None
+
+    @staticmethod
+    def setup_pika_channel() -> (pika.spec.Connection, pika.spec.Channel):
+        conn = pika.BlockingConnection(pika.ConnectionParameters(
+            host=settings.RABBITMQ_HOST,
+            port=getattr(settings, "RABBITMQ_PORT", 5672),
+            virtual_host=getattr(settings, "RABBITMQ_VHOST", "/"),
+            credentials=pika.PlainCredentials(username=settings.RABBITMQ_USER, password=settings.RABBITMQ_PASSWORD),
+            connection_attempts=getattr(settings, "RABBITMQ_CONNECTION_ATTEMPTS", 3),
+            retry_delay=getattr(settings, "RABBITMQ_RETRY_DELAY", 3)
+        ))
+
+        channel = conn.channel()
+        channel.exchange_declare(settings.RABBITMQ_EXCHANGE, exchange_type="topic",durable=True)
+        channel.confirm_delivery()
+
+        return conn, channel
+
+    def update_pluto_record(self, item_id, job_id, content:dict):
+        (conn, channel) = self.setup_pika_channel()
+
+        if 'type' not in content:
+            logger.error("Content dictionary had no type information! Using video-upload")
+            type = const.MESSAGE_TYPE_MEDIA
+        else:
+            type = content['type']
+
+        routingkey = "atomresponder.atom.{}".format(type)
+
+        message_to_send = {
+            **content,
+            "itemId": item_id,
+            "jobId": job_id
+        }
+        while True:
+            try:
+                logger.info("Updating exchange {} with routing-key {}...".format(settings.RABBITMQ_EXCHANGE, routingkey))
+                channel.basic_publish(settings.RABBITMQ_EXCHANGE, routingkey, json.dumps(message_to_send).encode("UTF-8"))
+                conn.close()    #makes sure everything gets flushed nicely
+                break
+            except pika.exceptions.UnroutableError:
+                logger.error("Could not route message to broker, retrying in 3s...")
+                time.sleep(3)
+
     def get_or_create_master_item(self, atomId:str, title:str, filename:str, project_id:int, user:str) -> (VSItem, bool):
         master_item = self.get_item_for_atomid(atomId)
 
@@ -100,7 +137,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             master_item = self.get_item_for_atomid(content['atomId'])
             if master_item is not None:
                 logger.info("Master item for atom already exists at {0}, assigning".format(master_item.name))
-                self.update_pluto_record(master_item.name,project_id=content["projectId"])
+                self.update_pluto_record(master_item.name, None, content)
             else:
                 logger.warning("No master item exists for atom {0}.  Requesting a re-send from media atom tool".format(content['atomId']))
                 try:
@@ -221,7 +258,6 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
                                                  )
         logger.info("{0} Import job is at ID {1}".format(vs_item_id, job_result.name))
 
-        self.update_pluto_record(vs_item_id, content['projectId'])
         #make a note of the record. This is to link it up with Vidispine's response message.
         record = ImportJob(item_id=vs_item_id,
                            job_id=job_result.name,
@@ -237,6 +273,8 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             record.retry_number = previous_attempt.retry_number+1
             logger.info("{0} Import job is retry number {1}".format(vs_item_id, record.retry_number))
         record.save()
+
+        self.update_pluto_record(vs_item_id, job_result.name, content)
 
         try:
             logger.info("{n}: Looking for PAC info that has been already registered".format(n=vs_item_id))
