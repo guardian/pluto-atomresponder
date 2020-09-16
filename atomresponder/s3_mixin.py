@@ -38,8 +38,8 @@ class S3Mixin(object):
         :return:
         """
         sts_conn = sts.connect_to_region('eu-west-1',
-                                         aws_access_key_id=getattr(settings,'ATOM_RESPONDER_AWS_KEY_ID',None),
-                                         aws_secret_access_key=getattr(settings,'ATOM_RESPONDER_SECRET',None)
+                                         aws_access_key_id=getattr(settings,'MEDIA_ATOM_AWS_ACCESS_KEY_ID',None),
+                                         aws_secret_access_key=getattr(settings,'MEDIA_ATOM_AWS_SECRET_ACCESS_KEY',None)
                                          )
         credentials = sts_conn.assume_role(self.role_name, self.session_name)
         return s3.connect_to_region('eu-west-1', aws_access_key_id=credentials.credentials.access_key,
@@ -69,6 +69,7 @@ class S3Mixin(object):
         :return: filepath that has been downloaded
         """
         import traceback
+        logger.info("Downloading from s3://{0}/{1} to {2}".format(bucket, key, filename))
         dest_path = self.get_download_filename(key, overridden_name=filename)
         conn = self.get_s3_connection()
         bucketref = conn.get_bucket(bucket)
@@ -80,7 +81,7 @@ class S3Mixin(object):
         while True:
             logger.info("Downloading {0}/{1} to {2}, attempt {3}...".format(bucket, key, dest_path,n))
             try:
-                with open(dest_path, "w") as f:
+                with open(dest_path, "wb") as f:
                     keyref.get_contents_to_file(f)
                 logger.info("Completed downloading {0}/{1}".format(bucket,key))
                 return dest_path

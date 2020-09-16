@@ -190,8 +190,7 @@ class TestVsMixin(django.test.TestCase):
                 mock_refresh_creds.assert_called_once()
                 r.create_placeholder_for_atomid("f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
                                                 title="fake title",
-                                                user="joe.bloggs@mydomain.com",
-                                                parent=mock_project)
+                                                user="joe.bloggs@mydomain.com")
                 mock_item.createPlaceholder.assert_called_once_with(
                     {'title': 'fake title',
                      'gnm_commission_title': VSMetadataReference(uuid="41cce471-2b30-48fa-8af2-b0d42aff6c7f"),

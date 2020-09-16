@@ -1,17 +1,6 @@
 # from celery.signals import task_failure,task_success,task_revoked
 import logging
 from django.dispatch import receiver
-# import os
-#
-# if not 'CI' in os.environ:
-#     #this import at root level makes things tricky, but is necessary to support the sender= argument on the decorators
-#     #below.
-#     from portal.plugins.gnm_masters.tasks import update_pacdata
-# else:
-#     #dummy implementation for CI
-#     def update_pacdata():
-#         pass
-
 logger = logging.getLogger(__name__)
 
 logger.info("registering signal handlers")
@@ -72,27 +61,6 @@ logger.info("registering signal handlers")
 #     except Exception as e:
 #         logger.exception(str(e))
 
-
-def handle_project_created(sender, project_model, **kwargs):
-    from .media_atom import update_kinesis, MSG_PROJECT_CREATED, MSG_PROJECT_UPDATED
-
-    logger.info("Got project create notification from  {0}".format(sender))
-    try:
-        update_kinesis(project_model, MSG_PROJECT_CREATED)
-    except Exception as e:
-        logger.exception("Handling project create notification")
-        raise
-
-
-def handle_project_updated(sender, project_model, **kwargs):
-    from .media_atom import update_kinesis, MSG_PROJECT_CREATED, MSG_PROJECT_UPDATED
-
-    logger.info("Got project update notification from  {0}".format(sender))
-    try:
-        update_kinesis(project_model, MSG_PROJECT_UPDATED)
-    except Exception as e:
-        logger.exception("Handling project create notification")
-        raise
 #
 # def setup_signals():
 #     """

@@ -176,12 +176,15 @@ ATOM_RESPONDER_DOWNLOAD_PATH=os.environ.get("LOCAL_DOWNLOAD_PATH", "/path/to/dow
 ATOM_RESPONDER_DOWNLOAD_BUCKET=os.environ.get("DOWNLOAD_BUCKET", "bucketname")
 
 ### Connection to Kinesis
-ATOM_RESPONDER_ROLE_NAME=os.environ.get("AWS_ROLE","Fred")
-MEDIA_ATOM_STREAM_NAME=os.environ.get("MEDIA_ATOM_STREAM","streamname") #Kinesis stream to connect to
+ATOM_RESPONDER_STREAM_NAME=os.environ.get("MEDIA_ATOM_STREAM","streamname") #Kinesis stream to connect to
 MEDIA_ATOM_ROLE_ARN=os.environ.get("MEDIA_ATOM_ROLE_ARN","somearn")     #Role to use when connecting to the stream
 MEDIA_ATOM_AWS_ACCESS_KEY_ID=os.environ.get("MEDIA_ATOM_AWS_ACCESS_KEY_ID","somekey")   #AWS creds to use when assuming the role
 MEDIA_ATOM_AWS_SECRET_ACCESS_KEY=os.environ.get("MEDIA_ATOM_AWS_SECRET_ACCESS_KEY","somesecret")
 SESSION_NAME="pluto-atomresponder"  #Session description for temporary credentials associated with role
+
+### Ingest parameters
+ATOM_RESPONDER_SHAPE_TAG=os.environ.get("ATOM_RESPONDER_SHAPE_TAG", "lowres")
+ATOM_RESPONDER_IMPORT_PRIORITY=os.environ.get("ATOM_RESPONDER_IMPORT_PRIORITY", "HIGH")
 
 ### Connection to media atom tool, for resending
 ATOM_TOOL_HOST='https://atomtool'

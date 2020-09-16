@@ -194,8 +194,8 @@
 #     logger.info("{0}: starting timed retry".format(content['atomId']))
 #     imp = MasterImportResponder(AtomResponderCommand.role_name, AtomResponderCommand.session_name,
 #                                 AtomResponderCommand.stream_name, "timed-resync",
-#                                 aws_access_key_id=settings.ATOM_RESPONDER_AWS_KEY_ID,
-#                                 aws_secret_access_key=settings.ATOM_RESPONDER_SECRET)
+#                                 aws_access_key_id=settings.MEDIA_ATOM_AWS_ACCESS_KEY_ID,
+#                                 aws_secret_access_key=settings.MEDIA_ATOM_AWS_SECRET_ACCESS_KEY)
 #
 #     imp.process(record, approx_arrival, attempt=attempt)
 #     logger.info("{0}: timed retry completed".format(content['atomId']))

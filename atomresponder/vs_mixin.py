@@ -6,6 +6,7 @@ import logging
 from . import constants as const
 from atomresponder.exceptions import NotAProjectError
 from gnmvidispine.vs_item import VSItem
+import datetime
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +27,7 @@ class VSMixin(object):
             return item
         except VSNotFound:
             s = VSItemSearch(url=settings.VIDISPINE_URL,user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
-            s.addCriterion({const.GNM_MASTERS_MEDIAATOM_ATOMID: atomid, const.GNM_TYPE: 'Master'})
+            s.addCriterion({const.GNM_DELIVERABLE_ATOM_ID: atomid, const.GNM_ASSET_CATEGORY: 'Deliverable'})
             result = s.execute()
             if result.totalItems==0:
                 return None
@@ -40,51 +41,43 @@ class VSMixin(object):
                 return resultList[0]
 
     @staticmethod
-    def get_userid_for_email(email_address):
-        from django.contrib.auth.models import User
-        try:
-            user = User.objects.get(email=email_address)
-            logger.info("Got user {0} with id {1} for email {2}".format(user.username, user.pk, email_address))
-            return user.pk
-        except User.DoesNotExist:
-            logger.info("Could not find any user for email {0}".format(email_address))
-            return None
-
-    @staticmethod
-    def create_placeholder_for_atomid(atomid, title="unknown video", user="unknown_user", parent=None):
+    def create_placeholder_for_atomid(atomid, filename, project_id, title="unknown video", user="unknown_user"):
         """
         Creates a placeholder and returns a VSItem object for it
         :param atomid: atom ID string
         :param title: title of the new video
         :return: VSItem object
         """
-        from gnmvidispine.vs_metadata import VSMetadataReference
         item = VSItem(url=settings.VIDISPINE_URL,user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
 
-        project_name_attribs = parent.get_metadata_attributes(const.GNM_PROJECT_HEADLINE)
+        # metadata = {const.GNM_TYPE: 'Master',
+        #             'title': title,
+        #             const.GNM_MASTERS_WEBSITE_HEADLINE: title,
+        #             const.GNM_MASTERS_MEDIAATOM_ATOMID: atomid,
+        #             const.GNM_MASTERS_GENERIC_TITLEID: atomid,
+        #             const.GNM_ASSET_CATEGORY: "Master",
+        #             const.GNM_MASTERS_MEDIAATOM_UPLOADEDBY: user,
+        #             const.GNM_PROJECT_HEADLINE: project_name_reference,
+        #             const.GNM_COMMISSION_TITLE: commission_name_ref
+        #             }
+        #
+        basemeta = {
+            const.GNM_ASSET_CATEGORY: "Deliverable",
+            const.GNM_ASSET_ORIGINAL_FILENAME: filename,
+            const.GNM_ASSET_CONTAINING_PROJECTS: [project_id],
+            const.GNM_ASSET_OWNER: user,
+            const.GNM_ASSET_FILE_CREATED: datetime.datetime.now().isoformat("T")
+        }
 
-        project_name_reference = VSMetadataReference(uuid=project_name_attribs[0].uuid)
+        builder = item.get_metadata_builder()
+        builder.addGroup(const.GROUP_GNM_ASSET, basemeta)
+        # this needs to get filled in by deliverables
+        # builder.addGroup(const.GROUP_GNM_DELIVERABLE, {
+        #     const.GNM_DELIVERABLE_ATOM_ID: atomid
+        # })
 
-        commission_name_attribs = parent.get_metadata_attributes(const.GNM_COMMISSION_TITLE)
-        commission_name_ref = VSMetadataReference(uuid=commission_name_attribs[0].uuid)
-
-        metadata = {const.GNM_TYPE: 'Master',
-                    'title': title,
-                    const.GNM_MASTERS_WEBSITE_HEADLINE: title,
-                    const.GNM_MASTERS_MEDIAATOM_ATOMID: atomid,
-                    const.GNM_MASTERS_GENERIC_TITLEID: atomid,
-                    const.GNM_ASSET_CATEGORY: "Master",
-                    const.GNM_MASTERS_MEDIAATOM_UPLOADEDBY: user,
-                    const.GNM_PROJECT_HEADLINE: project_name_reference,
-                    const.GNM_COMMISSION_TITLE: commission_name_ref
-                    }
-        userid = VSMixin.get_userid_for_email(user)
-        if userid is not None:
-            metadata.update({
-                const.GNM_MASTERS_GENERIC_OWNER: userid
-            })
-
-        item.createPlaceholder(metadata, group='Asset')
+        mdbytes:bytes = builder.as_xml("UTF-8")
+        item.createPlaceholder(mdbytes.decode("UTF-8"))
         item.add_external_id(atomid)
         return item
 

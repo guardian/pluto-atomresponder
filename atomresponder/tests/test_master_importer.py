@@ -94,17 +94,14 @@ class TestMasterImporter(django.test.TestCase):
 
         pacxml = PacFormXml.objects.get(atom_id=fake_data['atomId'])
 
-        project_collection = MagicMock(target=VSCollection)
-        project_collection.addToCollection = MagicMock()
 
         with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
             with patch('atomresponder.pac_xml.PacXmlProcessor', return_value=pac_processor):
                 m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
                 m.download_to_local_location = MagicMock(return_value="/path/to/local/file")
 
-                m.import_new_item(master_item, fake_data, parent=project_collection)
+                m.import_new_item(master_item, fake_data)
                 pac_processor.link_to_item.assert_called_once_with(pacxml, master_item)
-                project_collection.addToCollection.assert_called_once_with(master_item)
                 master_item.import_to_shape.assert_called_once_with(essence=True, jobMetadata={'gnm_source': 'media_atom'}, priority='HIGH', shape_tag='lowres', uri='file:///path/to/local/file')
 
     def test_import_new_item_nopac(self):
@@ -150,7 +147,7 @@ class TestMasterImporter(django.test.TestCase):
                 m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
                 m.download_to_local_location = MagicMock(return_value="/path/to/local/file")
 
-                m.import_new_item(master_item, fake_data, parent=project_collection)
+                m.import_new_item(master_item, fake_data)
                 pac_processor.link_to_item.assert_not_called()
                 project_collection.addToCollection.assert_called_once_with(master_item)
                 master_item.import_to_shape.assert_called_once_with(essence=True, jobMetadata={'gnm_source': 'media_atom'}, priority='HIGH', shape_tag='lowres', uri='file:///path/to/local/file')
@@ -237,68 +234,6 @@ class TestMasterImporter(django.test.TestCase):
                 m.process(json_msg,None)
                 m.import_new_item.assert_not_called()
                 m.ingest_pac_xml.assert_called_once_with(pacxml)
-
-    def test_assign_atom_to_project(self):
-        """
-        assign_atom_to_project should do an assignment
-        :return:
-        """
-        from atomresponder.master_importer import MasterImportResponder
-        import atomresponder.constants as const
-        from gnmvidispine.vs_item import VSItem
-
-        mock_item = MagicMock(target=VSItem)
-        mock_item.get = MagicMock(return_value=None)
-
-        mock_collection = MagicMock(target=VSCollection)
-        mock_collection.get = MagicMock(return_value="VX-123")
-        mock_collection.addToCollection = MagicMock()
-
-        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
-            m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
-
-            m.get_item_for_atomid = MagicMock(return_value=mock_item)
-            m.get_collection_for_id = MagicMock(return_value=mock_collection)
-            m.set_project_fields_for_master = MagicMock(return_value=mock_item)
-
-            m.assign_atom_to_project("D64EEBD7-6033-4DC6-A0CA-1BBFA5A6DD95","VX-123","VX-456",mock_item)
-            mock_item.get.assert_called_once_with(const.PARENT_COLLECTION)
-            mock_collection.get.assert_called_once_with(const.PARENT_COLLECTION)
-            mock_collection.addToCollection.assert_called_once_with(mock_item)
-            m.set_project_fields_for_master.assert_called_once_with(mock_item, parent_project=mock_collection)
-
-    def test_reassign_atom_to_project(self):
-        """
-        assign_atom_to_project should remove the given master from a project that it's already attached to
-        :return:
-        """
-        from atomresponder.master_importer import MasterImportResponder
-        import atomresponder.constants as const
-        from gnmvidispine.vs_item import VSItem
-
-        mock_item = MagicMock(target=VSItem)
-        mock_item.get = MagicMock(return_value="VX-444")
-
-        mock_old_collection = MagicMock(target=VSCollection)
-
-        mock_collection = MagicMock(target=VSCollection)
-        mock_collection.get = MagicMock(return_value="VX-123")
-        mock_collection.addToCollection = MagicMock()
-
-
-        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
-            m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
-
-            m.get_item_for_atomid = MagicMock(return_value=mock_item)
-            m.get_collection_for_id = MagicMock(side_effect=[mock_old_collection, mock_collection])
-            m.set_project_fields_for_master = MagicMock(return_value=mock_item)
-
-            m.assign_atom_to_project("D64EEBD7-6033-4DC6-A0CA-1BBFA5A6DD95","VX-123","VX-456",mock_item)
-            mock_item.get.assert_called_once_with(const.PARENT_COLLECTION)
-            mock_old_collection.removeFromCollection.assert_called_once_with(mock_item)
-            mock_collection.get.assert_called_once_with(const.PARENT_COLLECTION)
-            mock_collection.addToCollection.assert_called_once_with(mock_item)
-            m.set_project_fields_for_master.assert_called_once_with(mock_item, parent_project=mock_collection)
 
     def test_process_outofsync_project(self):
         """

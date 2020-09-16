@@ -9,7 +9,7 @@ xmlns = "{http://xml.vidispine.com/schema/vidispine}"
 
 
 def list_shape_ids(vsid):
-    url = "{0}:{1}/API/item/{2}/shape".format(settings.VIDISPINE_URL,settings.VIDISPINE_PORT,vsid)
+    url = "{0}/API/item/{1}/shape".format(settings.VIDISPINE_URL,vsid)
     result = requests.get(url, auth=(settings.VIDISPINE_USERNAME,settings.VIDISPINE_PASSWORD), headers={"Accept":"application/xml"})
     if result.status_code == 200:
         doc = fromstring(result.text.encode("utf-8"))
@@ -28,7 +28,7 @@ def check_shape_tag(vsid, shapeid, tagtofind):
     :param tagtofind: shape tagname
     :return: either None or the parsed xml data
     """
-    url = "{0}:{1}/API/item/{2}/shape/{3}".format(settings.VIDISPINE_URL,settings.VIDISPINE_PORT,vsid, shapeid)
+    url = "{0}/API/item/{1}/shape/{2}".format(settings.VIDISPINE_URL,vsid, shapeid)
     result = requests.get(url, auth=(settings.VIDISPINE_USERNAME,settings.VIDISPINE_PASSWORD), headers={"Accept":"application/xml"})
     if result.status_code == 200:
         doc = fromstring(result.text.encode("utf-8"))
@@ -77,7 +77,7 @@ def delete_existing_proxy(vsid, shape_id):
     :param shape_id:
     :return:
     """
-    url = "{0}:{1}/API/item/{2}/shape/{3}".format(settings.VIDISPINE_URL, settings.VIDISPINE_PORT, vsid, shape_id)
+    url = "{0}/API/item/{1}/shape/{2}".format(settings.VIDISPINE_URL, vsid, shape_id)
     response = requests.delete(url, auth=(settings.VIDISPINE_USERNAME, settings.VIDISPINE_PASSWORD))
     if 299 > response.status_code >= 200:
        return True
@@ -92,7 +92,7 @@ def transcode_proxy(vsid, shape_tag):
     :param shape_tag: type of proxy to create
     :return:
     """
-    url = "{0}:{1}/API/item/{2}/transcode?priority=HIGH&tag={3}".format(settings.VIDISPINE_URL, settings.VIDISPINE_PORT, vsid, shape_tag)
+    url = "{0}/API/item/{1}/transcode?priority=HIGH&tag={2}".format(settings.VIDISPINE_URL, vsid, shape_tag)
     response = requests.post(url, auth=(settings.VIDISPINE_USERNAME, settings.VIDISPINE_PASSWORD))
     if 299 > response.status_code >= 200:
         logger.info("{0}: transcode started successfully: {1}".format(vsid, response.text))
