@@ -3,6 +3,7 @@ import django.test
 import os
 from django.core.management import execute_from_command_line
 
+
 class TestNotification(django.test.TestCase):
     fixtures = [
         'ImportJobs.yaml'
@@ -59,39 +60,3 @@ class TestNotification(django.test.TestCase):
                 after_record = ImportJob.objects.get(job_id=data.jobId)
                 self.assertEqual(after_record.status,'FINISHED')
                 mock_handle_failed_job.assert_not_called()
-
-    # def test_handle_failed_job(self):
-    #     """
-    #     handle_failed_job should ask Celery to run the retry task after an exponential delay
-    #     :return:
-    #     """
-    #     from atomresponder.models import ImportJob
-    #
-    #     fakejob = ImportJob(
-    #         item_id='VX-123',
-    #         job_id='VX-456',
-    #         atom_id='060386C2-3764-47F9-B338-F71E4E0704A7',
-    #         retry_number=0
-    #     )
-    #
-    #     with patch("atomresponder.tasks.timed_request_resend.apply_async") as mock_send_request:
-    #         from atomresponder.notification import handle_failed_job
-    #
-    #         handle_failed_job(fakejob)
-    #         mock_send_request.assert_called_once_with(args=('060386C2-3764-47F9-B338-F71E4E0704A7', ), countdown=4)
-    #         mock_send_request.reset_mock()
-    #
-    #         fakejob.retry_number=1
-    #         handle_failed_job(fakejob)
-    #         mock_send_request.assert_called_once_with(args=('060386C2-3764-47F9-B338-F71E4E0704A7', ), countdown=16)
-    #         mock_send_request.reset_mock()
-    #
-    #         fakejob.retry_number=2
-    #         handle_failed_job(fakejob)
-    #         mock_send_request.assert_called_once_with(args=('060386C2-3764-47F9-B338-F71E4E0704A7', ), countdown=64)
-    #         mock_send_request.reset_mock()
-    #
-    #         fakejob.retry_number=3
-    #         handle_failed_job(fakejob)
-    #         mock_send_request.assert_called_once_with(args=('060386C2-3764-47F9-B338-F71E4E0704A7', ), countdown=256)
-    #         mock_send_request.reset_mock()

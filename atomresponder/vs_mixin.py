@@ -64,10 +64,9 @@ class VSMixin(object):
         builder = item.get_metadata_builder()
         builder.addMeta({'title': title})
         builder.addGroup(const.GROUP_GNM_ASSET, basemeta)
-        # this needs to get filled in by deliverables
-        # builder.addGroup(const.GROUP_GNM_DELIVERABLE, {
-        #     const.GNM_DELIVERABLE_ATOM_ID: atomid
-        # })
+        # the 'deliverables' group requires deliverable bundle ID to be present in order to be valid,
+        # but we don't know what that is here (it's assigned in pluto-deliverables)
+        # Once pluto-deliverables has assigned these IDs, it adds them to the Vidispine record.
 
         mdbytes:bytes = builder.as_xml("UTF-8")
         item.createPlaceholder(mdbytes.decode("UTF-8"))

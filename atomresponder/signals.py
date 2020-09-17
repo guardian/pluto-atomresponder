@@ -3,8 +3,6 @@ import logging
 from django.dispatch import receiver
 logger = logging.getLogger(__name__)
 
-logger.info("registering signal handlers")
-
 # @receiver(task_success, sender=update_pacdata)
 # def edl_import_success(signal=None,result=None,sender=None,**kwargs):
 #     #sender is of type Task

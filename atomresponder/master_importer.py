@@ -110,11 +110,6 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
                 user_to_set="unknown_user"
             else:
                 user_to_set=user
-            # master_item = self.create_placeholder_for_atomid(atomId,
-            #                                                  title=title,
-            #                                                  user=user_to_set,
-            #                                                  parent=project_collection
-            #                                                  )
             master_item = self.create_placeholder_for_atomid(atomId,
                                                              filename=filename,
                                                              title=title,
