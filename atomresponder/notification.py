@@ -17,10 +17,11 @@ def _get_callback_url(use_auth=None):
     else:
         auth = True
 
+    v = None
     # use callback from settings
     if hasattr(settings, "VIDISPINE_CALLBACK_URL"):
-        v = settings.PLUTO_CALLBACK_URL
-    else:
+        v = settings.VIDISPINE_CALLBACK_URL
+    if v is None:
         raise ValueError("You must set VIDISPINE_CALLBACK_URL in the settings")
     v = v.strip()
 

@@ -12,6 +12,8 @@ import atomresponder.constants as const
 import re
 import pika
 import time
+import os
+import posix
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +41,12 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         ))
 
         channel = conn.channel()
-        channel.exchange_declare(settings.RABBITMQ_EXCHANGE, exchange_type="topic",durable=True)
+        channel.exchange_declare(settings.RABBITMQ_EXCHANGE, exchange_type="topic")
         channel.confirm_delivery()
 
         return conn, channel
 
-    def update_pluto_record(self, item_id, job_id, content:dict):
+    def update_pluto_record(self, item_id, job_id, content:dict, statinfo):
         (conn, channel) = self.setup_pika_channel()
 
         if 'type' not in content:
@@ -67,11 +69,22 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         except LinkedProject.DoesNotExist:
             commission_id = -1
 
+        if statinfo is not None:
+            statpart = {
+                "size": statinfo.st_size,
+                "atime": statinfo.st_atime,
+                "mtime": statinfo.st_mtime,
+                "ctime": statinfo.st_ctime
+            }
+        else:
+            statpart = {}
+
         message_to_send = {
             **content,
             "itemId": item_id,
             "jobId": job_id,
-            "commissionId": commission_id
+            "commissionId": commission_id,
+            **statpart
         }
 
         while True:
@@ -152,7 +165,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             master_item = self.get_item_for_atomid(content['atomId'])
             if master_item is not None:
                 logger.info("Master item for atom already exists at {0}, assigning".format(master_item.name))
-                self.update_pluto_record(master_item.name, None, content)
+                self.update_pluto_record(master_item.name, None, content, None)
             else:
                 logger.warning("No master item exists for atom {0}.  Requesting a re-send from media atom tool".format(content['atomId']))
                 try:
@@ -289,7 +302,9 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             logger.info("{0} Import job is retry number {1}".format(vs_item_id, record.retry_number))
         record.save()
 
-        self.update_pluto_record(vs_item_id, job_result.name, content)
+        statinfo = os.stat(downloaded_path)
+
+        self.update_pluto_record(vs_item_id, job_result.name, content, statinfo)
 
         try:
             logger.info("{n}: Looking for PAC info that has been already registered".format(n=vs_item_id))
