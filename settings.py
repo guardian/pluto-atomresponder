@@ -178,7 +178,8 @@ ATOM_RESPONDER_DOWNLOAD_PATH=os.environ.get("LOCAL_DOWNLOAD_PATH", "/path/to/dow
 ATOM_RESPONDER_DOWNLOAD_BUCKET=os.environ.get("DOWNLOAD_BUCKET", "bucketname")
 
 ### Connection to Kinesis
-ATOM_RESPONDER_STREAM_NAME=os.environ.get("MEDIA_ATOM_STREAM","streamname") #Kinesis stream to connect to
+INCOMING_KINESIS_STREAM=os.environ.get("INCOMING_KINESIS_STREAM","instream") #Kinesis stream we publish project updates to
+OUTGOING_KINESIS_STREAM=os.environ.get("OUTGOING_KINESIS_STREAM","outstream") #Kinesis stream we receive media updates from
 MEDIA_ATOM_ROLE_ARN=os.environ.get("MEDIA_ATOM_ROLE_ARN","somearn")     #Role to use when connecting to the stream
 MEDIA_ATOM_AWS_ACCESS_KEY_ID=os.environ.get("MEDIA_ATOM_AWS_ACCESS_KEY_ID","somekey")   #AWS creds to use when assuming the role
 MEDIA_ATOM_AWS_SECRET_ACCESS_KEY=os.environ.get("MEDIA_ATOM_AWS_SECRET_ACCESS_KEY","somesecret")

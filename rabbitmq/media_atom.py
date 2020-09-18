@@ -24,7 +24,7 @@ def update_kinesis(project_instance: ProjectModel, commission_instance: CachedCo
 
     project_id = str(project_instance.id)
     logger.info("{0}: Project updated, notifying {1} via role {2}".format(project_id,
-                                                                          settings.MEDIA_ATOM_STREAM_NAME,
+                                                                          settings.OUTGOING_KINESIS_STREAM,
                                                                           settings.MEDIA_ATOM_ROLE_ARN
                                                                           )
                 )
@@ -59,7 +59,7 @@ def update_kinesis(project_instance: ProjectModel, commission_instance: CachedCo
     logger.debug("{0}: Message is {1}".format(project_id, message_content))
 
     kinesis_connection.put_record(
-        stream_name=settings.MEDIA_ATOM_STREAM_NAME,
+        stream_name=settings.OUTGOING_KINESIS_STREAM,
         data=json.dumps(message_content),
         partition_key=project_id)
     logger.info("{0}: Project update sent".format(project_id))

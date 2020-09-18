@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(KinesisResponderBaseCommand):
-    stream_name = settings.ATOM_RESPONDER_STREAM_NAME
+    stream_name = settings.INCOMING_KINESIS_STREAM
     role_name = settings.MEDIA_ATOM_ROLE_ARN
 
     session_name = "GNMAtomResponder"
