@@ -35,7 +35,7 @@ def check_shape_tag(vsid, shapeid, tagtofind):
         shape_tag_node = doc.find("{0}tag".format(xmlns))
 
         if shape_tag_node is None:
-            logger.warn("shape {0} on item {1} has no shape tag node".format(shapeid, vsid))
+            logger.warning("shape {0} on item {1} has no shape tag node".format(shapeid, vsid))
             return None
 
         if shape_tag_node.text == tagtofind:
@@ -80,7 +80,7 @@ def delete_existing_proxy(vsid, shape_id):
     url = "{0}/API/item/{1}/shape/{2}".format(settings.VIDISPINE_URL, vsid, shape_id)
     response = requests.delete(url, auth=(settings.VIDISPINE_USERNAME, settings.VIDISPINE_PASSWORD))
     if 299 > response.status_code >= 200:
-       return True
+        return True
     else:
         raise Exception("could not delete shape {0} on {1}, server returned {2}".format(shape_id, vsid, response.status_code))
 
