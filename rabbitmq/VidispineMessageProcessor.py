@@ -4,9 +4,13 @@ import logging
 from atomresponder.models import ImportJob
 from kinesisresponder.sentry import inform_sentry_exception
 from .transcode_check import check_for_broken_proxy, delete_existing_proxy, transcode_proxy
+from datetime import datetime
+import pytz
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+time_zone: str = getattr(settings,"TIME_ZONE", "UTC")
 
 class VidispineMessageProcessor(MessageProcessor):
     routing_key = "vidispine.job.essence_version.stop"
@@ -49,6 +53,7 @@ class VidispineMessageProcessor(MessageProcessor):
         importjob = ImportJob.objects.get(job_id=notification.jobId)
         importjob.status = notification.status
         importjob.processing = False
+        importjob.completed_at = datetime.now(tz=pytz.timezone(time_zone))
         importjob.save()
 
         if importjob.is_failed():
@@ -77,6 +82,7 @@ class VidispineMessageProcessor(MessageProcessor):
         :param import_job: ImportJob model instance representing the failed job
         :return:
         """
+        ##FIXME: still needs implementing
         from .tasks import timed_request_resend
 
         logger.info("{0} ({1}): failed on attempt {2}".format(import_job.item_id, import_job.atom_id, import_job.retry_number))
