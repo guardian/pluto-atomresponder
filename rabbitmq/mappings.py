@@ -14,6 +14,7 @@ EXCHANGE_MAPPINGS = [
     },
     {
         "exchange": "vidispine-events",
+        "durable": True,
         "handler": VidispineMessageProcessor(),
     }
 ]

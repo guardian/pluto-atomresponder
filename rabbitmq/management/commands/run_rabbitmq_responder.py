@@ -19,7 +19,7 @@ class Command(BaseCommand):
         self.runloop = None
 
     @staticmethod
-    def connect_channel(exchange_name, handler, channel):
+    def connect_channel(exchange_name, handler, channel, durable=False):
         """
         async callback that is used to connect a channel once it has been declared
         :param channel: channel to set up
@@ -35,10 +35,10 @@ class Command(BaseCommand):
         channel.queue_declare("atomresponder-dlq", durable=True)
         channel.queue_bind("atomresponder-dlq","atomresponder-dlx")
 
-        channel.exchange_declare(exchange=exchange_name, exchange_type="topic")
+        channel.exchange_declare(exchange=exchange_name, exchange_type="topic", durable=durable)
         channel.queue_declare(queuename, arguments={
             'x-message-ttl': getattr(settings,"RABBITMQ_QUEUE_TTL", 5000),
-            'x-deadletter-exchange': "atomresponder-dlx"
+            'x-dead-letter-exchange': "atomresponder-dlx"
         })
         channel.queue_bind(queuename, exchange_name, routing_key=handler.routing_key)
         channel.basic_consume(queuename,
@@ -60,9 +60,12 @@ class Command(BaseCommand):
         for i in range(0, len(EXCHANGE_MAPPINGS)):
             # partial adjusts the argument list, adding the args here onto the _start_ of the list
             # so the args are (exchange, handler, channel) not (channel, exchange, handler)
+            durable_flag = EXCHANGE_MAPPINGS[i]["durable"] if "durable" in EXCHANGE_MAPPINGS[i] else False
+
             chl = connection.channel(on_open_callback=partial(Command.connect_channel,
                                                         EXCHANGE_MAPPINGS[i]["exchange"],
-                                                        EXCHANGE_MAPPINGS[i]["handler"]),
+                                                        EXCHANGE_MAPPINGS[i]["handler"],
+                                                              durable=durable_flag),
                                     )
             chl.add_on_close_callback(self.channel_closed)
             chl.add_on_cancel_callback(self.channel_closed)
