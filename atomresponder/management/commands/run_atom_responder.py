@@ -1,21 +1,21 @@
 # coding: utf-8
 from django.conf import settings
-from portal.plugins.gnmatomresponder.master_importer import MasterImportResponder
-from portal.plugins.kinesisresponder.management.kinesis_responder_basecommand import KinesisResponderBaseCommand
+from atomresponder.master_importer import MasterImportResponder
+from kinesisresponder.management.kinesis_responder_basecommand import KinesisResponderBaseCommand
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class Command(KinesisResponderBaseCommand):
-    stream_name = settings.ATOM_RESPONDER_STREAM_NAME
-    role_name = settings.ATOM_RESPONDER_ROLE_NAME
+    stream_name = settings.INCOMING_KINESIS_STREAM
+    role_name = settings.MEDIA_ATOM_ROLE_ARN
 
     session_name = "GNMAtomResponder"
 
     def handle(self, *args, **options):
-        from portal.plugins.gnmatomresponder.notification import find_notification, create_notification
-        from portal.plugins.kinesisresponder.sentry import inform_sentry_exception
+        from atomresponder.notification import find_notification, create_notification
+        from kinesisresponder.sentry import inform_sentry_exception
         import traceback
         import xml.etree.cElementTree as ET
         from gnmvidispine.vs_external_id import ExternalIdNamespace
@@ -32,7 +32,7 @@ class Command(KinesisResponderBaseCommand):
 
         #ensure that the namespace for our external IDs is present. If not, create it.
         #this is to make it simple for LaunchDetector to look up items by atom ID
-        extid_namespace = ExternalIdNamespace(url=settings.VIDISPINE_URL,port=settings.VIDISPINE_PORT,user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
+        extid_namespace = ExternalIdNamespace(url=settings.VIDISPINE_URL,user=settings.VIDISPINE_USERNAME,passwd=settings.VIDISPINE_PASSWORD)
         try:
             extid_namespace.populate("atom_uuid")
             logger.info("Found external id namespace atom_uuid")
@@ -47,13 +47,13 @@ class Command(KinesisResponderBaseCommand):
 
         newoptions = options.copy()
         newoptions.update({
-            'aws_access_key_id': settings.ATOM_RESPONDER_AWS_KEY_ID,
-            'aws_secret_access_key': settings.ATOM_RESPONDER_SECRET
+            'aws_access_key_id': settings.MEDIA_ATOM_AWS_ACCESS_KEY_ID,
+            'aws_secret_access_key': settings.MEDIA_ATOM_AWS_SECRET_ACCESS_KEY
         })
 
         super(Command, self).handle(*args,**newoptions)
 
     def startup_thread(self, conn, shardinfo):
         return MasterImportResponder(self.role_name,self.session_name,self.stream_name,shardinfo['ShardId'],
-                                     aws_access_key_id=settings.ATOM_RESPONDER_AWS_KEY_ID,
-                                     aws_secret_access_key=settings.ATOM_RESPONDER_SECRET)
+                                     aws_access_key_id=settings.MEDIA_ATOM_AWS_ACCESS_KEY_ID,
+                                     aws_secret_access_key=settings.MEDIA_ATOM_AWS_SECRET_ACCESS_KEY)

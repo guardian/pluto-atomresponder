@@ -3,6 +3,8 @@ from mock import MagicMock, patch
 from gnmvidispine.vs_item import VSItem
 from gnmvidispine.vs_collection import VSCollection
 from gnmvidispine.vs_search import VSItemSearch
+import lxml.etree as ET
+import atomresponder.constants as const
 
 
 class TestVsMixin(django.test.TestCase):
@@ -61,8 +63,8 @@ class TestVsMixin(django.test.TestCase):
 
                     result = r.get_item_for_atomid("f6ba9036-3f53-4850-9c75-fe3bcfbae4b2")
                     mock_search.addCriterion.assert_called_once_with(
-                        {'gnm_master_mediaatom_atomid': "f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
-                         'gnm_type': 'Master'}
+                        {const.GNM_DELIVERABLE_ATOM_ID: "f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
+                         const.GNM_ASSET_CATEGORY: 'Deliverable'}
                     )
 
                     mock_item.populate.assert_has_calls([
@@ -92,8 +94,8 @@ class TestVsMixin(django.test.TestCase):
 
                     result = r.get_item_for_atomid("f6ba9036-3f53-4850-9c75-fe3bcfbae4b2")
                     mock_search.addCriterion.assert_called_once_with(
-                        {'gnm_master_mediaatom_atomid': "f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
-                         'gnm_type': 'Master'}
+                        {const.GNM_DELIVERABLE_ATOM_ID: "f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
+                         const.GNM_ASSET_CATEGORY: 'Deliverable'}
                     )
 
                 self.assertEqual(result, None)
@@ -121,45 +123,26 @@ class TestVsMixin(django.test.TestCase):
 
                     result = r.get_item_for_atomid("f6ba9036-3f53-4850-9c75-fe3bcfbae4b2")
                     mock_search.addCriterion.assert_called_once_with(
-                        {'gnm_master_mediaatom_atomid': "f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
-                         'gnm_type': 'Master'}
+                        {const.GNM_DELIVERABLE_ATOM_ID: "f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
+                         const.GNM_ASSET_CATEGORY: 'Deliverable'}
                     )
 
                     self.assertEqual(result, mock_item)
 
-    def test_set_project_fields_for_master(self):
-        """
-        set_project_fields_for_master should retrieve metadata references for the given collection and set them
-        as metadata on the given item
-        :return:
-        """
-        from gnmvidispine.vs_metadata import VSMetadataAttribute,VSMetadataReference, VSMetadataValue
-        from atomresponder.master_importer import MasterImportResponder
-        mock_item = MagicMock(target=VSItem)
-        mock_item.createPlaceholder = MagicMock()
-        mock_project = MagicMock(target=VSCollection)
-        mock_project_name_attrib = MagicMock(target=VSMetadataAttribute)
-        mock_project_name_attrib.uuid = "c4a7cd79-7652-47ba-bd3b-37492cdb91aa"
-        mock_project_name_attrib.values = [VSMetadataValue(uuid="B9A8D873-F704-4BA0-A339-17BF456FEA7C")]
-        mock_commission_name_attrib = MagicMock(target=VSMetadataAttribute)
-        mock_commission_name_attrib.references = [VSMetadataReference(uuid="8CDFBE79-7F08-4D66-9048-0CC33F664937")]
-        mock_commission_name_attrib.uuid = "41cce471-2b30-48fa-8af2-b0d42aff6c7f"
+    @staticmethod
+    def assertXmlContainsValue(xmlContent, key, value):
+        ns = {"vs": "http://xml.vidispine.com/schema/vidispine"}
+        field_nodes = xmlContent.xpath('//vs:name[text()="{}"]'.format(key), namespaces=ns)
 
-        mock_project.get_metadata_attributes = MagicMock(side_effect=[
-            [mock_project_name_attrib],
-            [mock_commission_name_attrib]
-        ])
+        if len(field_nodes)==0:
+            raise AssertionError("field {} does not exist".format(key))
 
-        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials') as mock_refresh_creds:
-            with patch('atomresponder.vs_mixin.VSItem', return_value=mock_item):
-                r = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
-                mock_refresh_creds.assert_called_once()
-
-                r.set_project_fields_for_master(mock_item,mock_project)
-                mock_item.set_metadata.assert_called_once_with({
-                    'gnm_commission_title': VSMetadataReference(uuid="41cce471-2b30-48fa-8af2-b0d42aff6c7f"),
-                    'gnm_project_headline': VSMetadataReference(uuid="c4a7cd79-7652-47ba-bd3b-37492cdb91aa")
-                }, group="Asset")
+        for field_node in field_nodes:
+            matching_value_nodes = field_node.getparent().xpath('//vs:value[text()="{}"]'.format(value), namespaces=ns)
+            if len(matching_value_nodes)>0:
+                return
+        print(ET.tostring(xmlContent))
+        raise AssertionError("field {} does exist but without wanted value".format(key))
 
     def test_create_placeholder_for_atomid(self):
         """
@@ -167,9 +150,16 @@ class TestVsMixin(django.test.TestCase):
         :return:
         """
         from gnmvidispine.vs_metadata import VSMetadataAttribute,VSMetadataReference, VSMetadataValue
+        from gnmvidispine.vs_item import VSMetadataBuilder
         from atomresponder.master_importer import MasterImportResponder
+
         mock_item = MagicMock(target=VSItem)
+        mock_item.host="localhost"
+        mock_item.port=8080
         mock_item.createPlaceholder = MagicMock()
+        builder = VSMetadataBuilder(mock_item)
+        mock_item.get_metadata_builder = MagicMock(return_value=builder)
+
         mock_project = MagicMock(target=VSCollection)
         mock_project_name_attrib = MagicMock(target=VSMetadataAttribute)
         mock_project_name_attrib.uuid = "c4a7cd79-7652-47ba-bd3b-37492cdb91aa"
@@ -189,21 +179,19 @@ class TestVsMixin(django.test.TestCase):
                 r = MasterImportResponder("fake role", "fake session", "fake stream", "shard-00000")
                 mock_refresh_creds.assert_called_once()
                 r.create_placeholder_for_atomid("f6ba9036-3f53-4850-9c75-fe3bcfbae4b2",
+                                                "/path/to/downloaded/file",
+                                                "2345",
                                                 title="fake title",
-                                                user="joe.bloggs@mydomain.com",
-                                                parent=mock_project)
-                mock_item.createPlaceholder.assert_called_once_with(
-                    {'title': 'fake title',
-                     'gnm_commission_title': VSMetadataReference(uuid="41cce471-2b30-48fa-8af2-b0d42aff6c7f"),
-                     'gnm_project_headline': VSMetadataReference(uuid="c4a7cd79-7652-47ba-bd3b-37492cdb91aa"),
-                     'gnm_asset_category': 'Master',
-                     'gnm_type': 'Master',
-                     'gnm_master_website_headline': 'fake title',
-                     'gnm_master_mediaatom_atomid': 'f6ba9036-3f53-4850-9c75-fe3bcfbae4b2',
-                     'gnm_master_generic_titleid': 'f6ba9036-3f53-4850-9c75-fe3bcfbae4b2',
-                     'gnm_master_mediaatom_uploaded_by': 'joe.bloggs@mydomain.com'
-                     }, group='Asset'
-                )
+                                                user="joe.bloggs@mydomain.com")
+
+                parsed_content = ET.fromstring(builder.as_xml("UTF-8"))
+                self.assertXmlContainsValue(parsed_content, "title","fake title")
+                self.assertXmlContainsValue(parsed_content, const.GNM_ASSET_CATEGORY, "Deliverable")
+                self.assertXmlContainsValue(parsed_content, const.GNM_ASSET_ORIGINAL_FILENAME, "/path/to/downloaded/file")
+                self.assertXmlContainsValue(parsed_content, const.GNM_ASSET_CONTAINING_PROJECTS,"2345")
+                self.assertXmlContainsValue(parsed_content, const.GNM_ASSET_OWNER, "joe.bloggs@mydomain.com")
+
+                mock_item.createPlaceholder.assert_called_once_with(builder.as_xml("UTF-8").decode("UTF-8"))
                 mock_item.add_external_id.assert_called_once_with("f6ba9036-3f53-4850-9c75-fe3bcfbae4b2")
 
     def test_get_collection_for_projectid(self):

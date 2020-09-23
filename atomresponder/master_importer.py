@@ -6,9 +6,14 @@ from .s3_mixin import S3Mixin, FileDoesNotExist
 from .vs_mixin import VSMixin
 import logging
 from gnmvidispine.vs_item import VSItem, VSNotFound
+from rabbitmq.models import LinkedProject
 from datetime import datetime
 import atomresponder.constants as const
 import re
+import pika
+import time
+import os
+import posix
 
 logger = logging.getLogger(__name__)
 
@@ -20,77 +25,96 @@ make_filename_re = re.compile(r'[^\w\d\.]')
 
 
 class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
-    def get_project_collection(self, content):
-        """
-        Gets a populated VSCollection reference to the project collection mentioned in content
-        :param content: parsed json message including the 'projectId' key
-        :return:
-        """
-        from .exceptions import NotAProjectError
+    def __init__(self, *args, **kwargs):
+        super(MasterImportResponder, self).__init__(*args, **kwargs)
+        self._pika_client = None
+
+    @staticmethod
+    def setup_pika_channel() -> (pika.spec.Connection, pika.spec.Channel):
+        conn = pika.BlockingConnection(pika.ConnectionParameters(
+            host=settings.RABBITMQ_HOST,
+            port=getattr(settings, "RABBITMQ_PORT", 5672),
+            virtual_host=getattr(settings, "RABBITMQ_VHOST", "/"),
+            credentials=pika.PlainCredentials(username=settings.RABBITMQ_USER, password=settings.RABBITMQ_PASSWORD),
+            connection_attempts=getattr(settings, "RABBITMQ_CONNECTION_ATTEMPTS", 3),
+            retry_delay=getattr(settings, "RABBITMQ_RETRY_DELAY", 3)
+        ))
+
+        channel = conn.channel()
+        channel.exchange_declare(settings.RABBITMQ_EXCHANGE, exchange_type="topic")
+        channel.confirm_delivery()
+
+        return conn, channel
+
+    def update_pluto_record(self, item_id, job_id, content:dict, statinfo):
+        (conn, channel) = self.setup_pika_channel()
+
+        if 'type' not in content:
+            logger.error("Content dictionary had no type information! Using video-upload")
+            type = const.MESSAGE_TYPE_MEDIA
+        else:
+            type = content['type']
+
+        routingkey = "atomresponder.atom.{}".format(type)
 
         try:
-            project_collection = self.get_collection_for_id(content['projectId'])
-        except VSNotFound:
+            linked_project = LinkedProject.objects.get(project_id=int(content['projectId']))
+            commission_id = linked_project.commission.id
+        except ValueError:
+            logger.error("Project ID {} does not convert to integer!".format(content['projectId']))
+            commission_id = -1
+        except KeyError:
+            logger.error("Content has no projectId? invalid message.")
+            raise RuntimeError("Invalid message")
+        except LinkedProject.DoesNotExist:
+            commission_id = -1
+
+        if statinfo is not None:
+            statpart = {
+                "size": statinfo.st_size,
+                "atime": statinfo.st_atime,
+                "mtime": statinfo.st_mtime,
+                "ctime": statinfo.st_ctime
+            }
+        else:
+            statpart = {}
+
+        message_to_send = {
+            **content,
+            "itemId": item_id,
+            "jobId": job_id,
+            "commissionId": commission_id,
+            **statpart
+        }
+
+        while True:
             try:
-                logger.warning("Invalid parent collection {0} specified for atom {1} ({2}). Falling back to default.".format(
-                    content['projectId'], content['atomId'],
-                    content.get('title','(unknown title)').encode("UTF-8","backslashescape")
-                ))
-            except UnicodeDecodeError:
-                pass
-            except UnicodeEncodeError:
-                pass
-            project_collection = None
-        except NotAProjectError:
-            try:
-                logger.warning("Collection {0} specified for atom {1} ({2}) is not a Project. Falling back to default.".format(
-                    content['projectId'], content['atomId'],
-                    content.get('title','(unknown title)').encode("UTF-8","backslashescape")
-                ))
-            except UnicodeDecodeError:
-                pass
-            except UnicodeEncodeError:
-                pass
-            project_collection = None
+                logger.info("Updating exchange {} with routing-key {}...".format(settings.RABBITMQ_EXCHANGE, routingkey))
+                channel.basic_publish(settings.RABBITMQ_EXCHANGE, routingkey, json.dumps(message_to_send).encode("UTF-8"))
+                conn.close()    #makes sure everything gets flushed nicely
+                break
+            except pika.exceptions.UnroutableError:
+                logger.error("Could not route message to broker, retrying in 3s...")
+                time.sleep(3)
 
-        if project_collection is None:
-            collection_id = getattr(settings,'ATOM_RESPONDER_DEFAULT_PROJECTID',None)
-            if collection_id is None:
-                raise RuntimeError("Unable to get a project ID for atom {0}, and no default is set".format(content['atomId']))
-            else:
-                project_collection = self.get_collection_for_id(collection_id)
-
-        return project_collection
-
-    def update_pluto_record(self, item_id, project_id):
-        import traceback
-        try:
-            from portal.plugins.gnm_masters.signals import master_external_update
-
-            master_external_update.send(sender=self.__class__, item_id=item_id, project_id=project_id)
-        except ImportError as e:
-            logger.error("Unable to signal master update: {0}".format(e))
-        except Exception as e:
-            logger.error("An error happened when outputting master_external_create signal: {0}".format(traceback.format_exc()))
-
-    def get_or_create_master_item(self, atomId, title, project_collection, user):
+    def get_or_create_master_item(self, atomId:str, title:str, filename:str, project_id:int, user:str) -> (VSItem, bool):
         master_item = self.get_item_for_atomid(atomId)
 
         created = False
 
         if master_item is None:
             if title is None:
-                raise RuntimeError("Title field not set for atom {0}.".format(atomId))
+                raise ValueError("Title field not set for atom {0}.".format(atomId))
             if user is None:
                 logger.warning("User field not set for atom {0}.".format(atomId))
                 user_to_set="unknown_user"
             else:
                 user_to_set=user
             master_item = self.create_placeholder_for_atomid(atomId,
+                                                             filename=filename,
                                                              title=title,
-                                                             user=user_to_set,
-                                                             parent=project_collection
-                                                             )
+                                                             project_id=project_id,
+                                                             user=user_to_set)
             logger.info("Created item {0} for atom {1}".format(master_item.name, atomId))
             created = True
         return master_item, created
@@ -114,14 +138,17 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         #We get two types of message on the stream, one for incoming xml the other for incoming media.
         if content['type'] == const.MESSAGE_TYPE_MEDIA or content['type'] == const.MESSAGE_TYPE_RESYNC_MEDIA:
-            project_collection = self.get_project_collection(content)
             if 'user' in content:
                 atom_user = content['user']
             else:
                 atom_user = None
-            master_item, created = self.get_or_create_master_item(content['atomId'], content['title'], project_collection, atom_user)
+            master_item, created = self.get_or_create_master_item(content['atomId'],
+                                                                  title=content['title'],
+                                                                  filename=content['s3Key'],
+                                                                  project_id=content['projectId'],
+                                                                  user=atom_user)
 
-            return self.import_new_item(master_item, content, parent=project_collection)
+            return self.import_new_item(master_item, content)
         elif content['type'] == const.MESSAGE_TYPE_PAC:
             logger.info("Got PAC form data message")
             record = self.register_pac_xml(content)
@@ -133,7 +160,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             master_item = self.get_item_for_atomid(content['atomId'])
             if master_item is not None:
                 logger.info("Master item for atom already exists at {0}, assigning".format(master_item.name))
-                self.assign_atom_to_project(content['atomId'], content['commissionId'], content['projectId'], master_item)
+                self.update_pluto_record(master_item.name, None, content, None)
             else:
                 logger.warning("No master item exists for atom {0}.  Requesting a re-send from media atom tool".format(content['atomId']))
                 try:
@@ -194,7 +221,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         return jobs > 0
 
-    def import_new_item(self, master_item, content, parent=None):
+    def import_new_item(self, master_item:VSItem, content):
         from .models import ImportJob, PacFormXml
         from .pac_xml import PacXmlProcessor
         from mock import MagicMock
@@ -215,7 +242,6 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             inform_sentry('A job for item {0} has already been successfully completed. Aborting.'.format(vs_item_id), {
                 "master_item": master_item,
                 "content": content,
-                "parent": parent
             })
             return
 
@@ -226,7 +252,6 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             inform_sentry('Job for item {0} already in progress. Aborting.'.format(vs_item_id), {
                 "master_item": master_item,
                 "content": content,
-                "parent": parent
             })
             return
 
@@ -242,13 +267,11 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         download_url = "file://" + urllib.parse.quote(downloaded_path)
 
-        logger.info("{n}: Ingesting atom with title '{0}' from media atom with ID {1}".format(safe_title, content['atomId'], n=master_item.name))
-        try:
-            logger.info("{n}: Download URL is {0}".format(download_url, n=master_item.name))
-        except UnicodeEncodeError:
-            pass
-        except UnicodeDecodeError:
-            pass
+        logger.info("{n}: Ingesting atom with title '{0}' from media atom with ID {1}".format(safe_title,
+                                                                                              content['atomId'],
+                                                                                              n=master_item.name))
+
+        logger.info("{n}: Download URL is {0}".format(download_url, n=master_item.name))
 
         job_result = master_item.import_to_shape(uri=download_url,
                                                  essence=True,
@@ -258,17 +281,6 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
                                                  )
         logger.info("{0} Import job is at ID {1}".format(vs_item_id, job_result.name))
 
-        master_item.set_metadata({const.GNM_ASSET_FILENAME: downloaded_path})
-
-        if parent is not None:
-            logger.info("{0}: Adding to collection {1}".format(vs_item_id, parent.name))
-            master_item.name = vs_item_id
-            parent.addToCollection(master_item)
-            logger.info("{0}: Done".format(vs_item_id))
-        else:
-            logger.error("{0}: No parent collection specified for item!".format(vs_item_id))
-
-        self.update_pluto_record(vs_item_id, parent.name)
         #make a note of the record. This is to link it up with Vidispine's response message.
         record = ImportJob(item_id=vs_item_id,
                            job_id=job_result.name,
@@ -284,6 +296,10 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             record.retry_number = previous_attempt.retry_number+1
             logger.info("{0} Import job is retry number {1}".format(vs_item_id, record.retry_number))
         record.save()
+
+        statinfo = os.stat(downloaded_path)
+
+        self.update_pluto_record(vs_item_id, job_result.name, content, statinfo)
 
         try:
             logger.info("{n}: Looking for PAC info that has been already registered".format(n=vs_item_id))
@@ -311,31 +327,3 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         #this process will call out to Pluto to do the linkup once the data has been received
         return proc.link_to_item(pac_xml_record, vsitem)
-
-    def assign_atom_to_project(self, atomId, commissionId, projectId, master_item):
-        """
-        (re)-assigns the given master to a project.
-        If the project is not associated with the given commission, warns but does not fail.
-        :param atomId:
-        :param commissionId:
-        :param projectId:
-        :return:
-        """
-
-        current_project_id = master_item.get(const.PARENT_COLLECTION)
-        if current_project_id is not None:
-            logger.warning("Re-assigning master {0} to project {1} so removing from {2}".format(master_item.name, projectId, current_project_id))
-            current_project_ref = self.get_collection_for_id(current_project_id)
-            current_project_ref.removeFromCollection(master_item)
-
-        new_project_ref = self.get_collection_for_id(projectId)
-        expected_commission_id = new_project_ref.get(const.PARENT_COLLECTION)
-        if expected_commission_id!=commissionId:
-            logger.warning("Project {0} belongs to commission {1}, but media atom thinks it belongs to commission {2}. Continuing anyway".format(projectId, expected_commission_id, commissionId))
-
-        logger.info("Adding master {0} to collection {1}".format(master_item.name, new_project_ref.name))
-        new_project_ref.addToCollection(master_item)
-        logger.info("Setting up project fields for {0}".format(master_item.name))
-        self.set_project_fields_for_master(master_item,parent_project=new_project_ref)
-        logger.info("Telling gnm_masters about updates for {0}".format(master_item.name))
-        self.update_pluto_record(master_item.name, projectId)

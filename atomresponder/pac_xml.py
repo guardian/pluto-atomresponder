@@ -28,7 +28,7 @@ class PacXmlProcessor(S3Mixin, VSMixin):
         :param vsitem: populated gnmvidispine.vs_item object
         :return:
         """
-        from portal.plugins.gnm_masters.edl_import import update_edl_data
+        #from portal.plugins.gnm_masters.edl_import import update_edl_data
 
         parsed = urllib.parse.urlparse(pac_xml_record.pacdata_url)
         if parsed.scheme != "s3":
@@ -46,9 +46,9 @@ class PacXmlProcessor(S3Mixin, VSMixin):
         filename = self.download_to_local_location(bucket=parsed.hostname, key=s3path)
         logger.info("{n}: Download completed".format(n=vsitem.name))
 
-        with open(filename,"r") as f:
-            logger.info("{n}: Linking EDL data from {0}".format(filename,n=vsitem.name))
-            pac_xml_record.status = "INPROGRESS"
-            pac_xml_record.save()
-            task_id = update_edl_data(f, vsitem.name, self.get_admin_user())
-        logger.info("{n}: Commenced EDL ingest in celery task {0}".format(task_id, n=vsitem.name))
+        # with open(filename,"r") as f:
+        #     logger.info("{n}: Linking EDL data from {0}".format(filename,n=vsitem.name))
+        #     pac_xml_record.status = "INPROGRESS"
+        #     pac_xml_record.save()
+        #     task_id = update_edl_data(f, vsitem.name, self.get_admin_user())
+        # logger.info("{n}: Commenced EDL ingest in celery task {0}".format(task_id, n=vsitem.name))

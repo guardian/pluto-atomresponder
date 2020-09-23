@@ -1,6 +1,7 @@
 from xml.etree.cElementTree import fromstring, tostring
 import lxml.etree
 from django.urls import reverse
+import requests
 import logging
 from requests import get,post
 from django.conf import settings
@@ -16,26 +17,14 @@ def _get_callback_url(use_auth=None):
     else:
         auth = True
 
-    try:
-        from django.conf import settings
-        #FIXME: this URL always returns a 404. Maybe it is not supported any more? If so we should remove.
-        r = get('%s:%s/whatismyipaddress/' % (settings.VIDISPINE_URL, settings.VIDISPINE_PORT), headers={'Accept': 'text/plain'})
-        if r.status_code < 300:
-            # TODO auto-detect https
-            if auth:
-                return 'http://' + settings.VIDISPINE_USERNAME + ':' + settings.VIDISPINE_PASSWORD + '@' + r.text.strip() + '/'
-            return 'http://' + r.text.strip() + '/'
-    except Exception as x:
-        logger.error(x)
-
+    v = None
     # use callback from settings
-    if hasattr(settings, "PLUTO_CALLBACK_URL"):
-        v = settings.PLUTO_CALLBACK_URL
-    else:
-        # fallback to vidispine address
-        v = settings.VIDISPINE_URL
+    if hasattr(settings, "VIDISPINE_CALLBACK_URL"):
+        v = settings.VIDISPINE_CALLBACK_URL
+    if v is None:
+        raise ValueError("You must set VIDISPINE_CALLBACK_URL in the settings")
     v = v.strip()
-    logger.warn('Failed to auto-detect IP address. Reverting to %s' % v)
+
     if not v.endswith('/'):
         v = v + '/'
     if auth and v.startswith('http://'):
@@ -87,7 +76,7 @@ def create_notification(retries=10,sleep_delay=10):
     )
     logger.debug("doc to send: {0}".format(doc_to_send))
 
-    output_url = "{0}:{1}/API/job/notification".format(settings.VIDISPINE_URL,settings.VIDISPINE_PORT)
+    output_url = "{0}/API/job/notification".format(settings.VIDISPINE_URL)
 
     n=0
     while True:
@@ -102,7 +91,7 @@ def create_notification(retries=10,sleep_delay=10):
         sleep(sleep_delay)
 
 
-def safe_get(uri,retries=10,sleep_delay=10):
+def safe_get(uri,retries=10,sleep_delay=10) -> requests.Response:
     """
     Makes a Get request to Vidispine, retrying if we get an invalid response.
     :param uri:
@@ -113,6 +102,7 @@ def safe_get(uri,retries=10,sleep_delay=10):
     n=0
     while True:
         n+=1
+        logger.info("Looking for notification at {0}".format(uri))
         response = get(uri,headers={'Accept': 'application/xml'}, auth=HTTPBasicAuth(settings.VIDISPINE_USERNAME,settings.VIDISPINE_PASSWORD))
         if response.status_code>199 or response.status_code<299:
             return response
@@ -133,9 +123,8 @@ def check_notification_at(uri,retries=10,sleep_delay=10):
     """
     response = safe_get(uri, retries=retries, sleep_delay=sleep_delay)
 
-    encoded_response = response.content.encode('UTF-8')
     parser = lxml.etree.XMLParser(ns_clean=False, recover=True, encoding='UTF-8')
-    notification_doc = lxml.etree.fromstring(encoded_response, parser=parser)
+    notification_doc = lxml.etree.fromstring(response.content, parser=parser)
 
     def find_value_for_key(xmlnode,key):
         n=0
@@ -161,7 +150,7 @@ def find_notification(retries=10,sleep_delay=10):
     :param sleep_delay:
     :return: URI of the notification, or None if it does not exist.
     """
-    output_url = "{0}:{1}/API/job/notification".format(settings.VIDISPINE_URL,settings.VIDISPINE_PORT)
+    output_url = "{0}/API/job/notification".format(settings.VIDISPINE_URL)
 
     response = safe_get(output_url, retries=retries,sleep_delay=sleep_delay)
 

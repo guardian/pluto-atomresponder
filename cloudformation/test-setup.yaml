@@ -1,0 +1,115 @@
+Description: Test setup for atomresponder
+Parameters:
+  OwnerTag:
+    Type: String
+    Description: Value for the "owner" tag
+  KeyRotationSerial:
+    Type: Number
+    Description: Increment this to rotate the key
+    Default: "1"
+Resources:
+  AtomResponderTestBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: Owner
+          Value: !Ref OwnerTag
+  AtomResponderTestStream:
+    ## outputs: !ref - stream name, !Fn::GetAtt Arn - ARN
+    Type: AWS::Kinesis::Stream
+    Properties:
+      ShardCount: 1
+      Tags:
+        - Key: Owner
+          Value: !Ref OwnerTag
+  AtomResponderTestRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: KinesisAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kinesis:PutRecord
+                  - kinesis:DescribeStreamSummary
+                  - kinesis:PutRecords
+                  - kinesis:GetShardIterator
+                  - kinesis:GetRecords
+                  - kinesis:DescribeStream
+                  - kinesis:ListTagsForStream
+                Resource:
+                  - !GetAtt AtomResponderTestStream.Arn
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObjectAcl
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt AtomResponderTestBucket.Arn
+                  - !Sub ${AtomResponderTestBucket.Arn}/*
+      Tags:
+        - Key: Owner
+          Value: !Ref OwnerTag
+  AtomResponderAssumeUser:
+    Type: AWS::IAM::User
+    Properties:
+      Path: /
+      Policies:
+        - PolicyName: AssumeRole
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource:
+                  - !GetAtt AtomResponderTestRole.Arn
+        #this is only needed for running the testing app with the same credentials
+        - PolicyName: KinesisWrite
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kinesis:PutRecord
+                Resource:
+                  - !GetAtt AtomResponderTestStream.Arn
+      Tags:
+        - Key: Owner
+          Value: !Ref OwnerTag
+  AssumeUserKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      Serial: !Ref KeyRotationSerial
+      UserName: !Ref AtomResponderAssumeUser
+Outputs:
+  AccessKeyId:
+    Value: !Ref AssumeUserKey
+    Description: Access key for the software
+  SecretKey:
+    Value: !GetAtt AssumeUserKey.SecretAccessKey
+    Description: Secret key for the software
+  RoleArn:
+    Value: !GetAtt AtomResponderTestRole.Arn
+    Description: Role ARN for the software
+  BucketName:
+    Value: !Ref AtomResponderTestBucket
+    Description: Bucket name for pulling content
+  StreamName:
+    Value: !Ref AtomResponderTestStream
+  StreamArn:
+    Value: !GetAtt AtomResponderTestStream.Arn
+
