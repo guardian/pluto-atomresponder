@@ -1,0 +1,236 @@
+{
+  "field": [
+    {
+      "key": "fileSize-VX-704",
+      "value": "119027351"
+    },
+    {
+      "key": "fileIdsPerTag0",
+      "value": "VX-705"
+    },
+    {
+      "key": "transcodeWallTime",
+      "value": "11.0873"
+    },
+    {
+      "key": "originalShapeId",
+      "value": "VX-406"
+    },
+    {
+      "key": "totalSteps",
+      "value": "9"
+    },
+    {
+      "key": "asset_id",
+      "value": "25"
+    },
+    {
+      "key": "mimeType",
+      "value": "video/mp4"
+    },
+    {
+      "key": "jobDocument",
+      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><ComplexJobDocument xmlns=\"http://xml.vidispine.com/schema/vidispine\"><input><id>1</id><uri>file:///srv/Multimedia2/NextGenDev/Proxies/VX-704.mp4</uri></input><output><id>1</id><uri>file:///srv/Multimedia2/NextGenDev/Proxies/VX-705.mov</uri><containerFormat>mov</containerFormat><metadata><key>fileId</key><value>VX-705</value></metadata></output><connection><input><id>1</id><stream>1</stream></input><audioOutput><id>1</id></audioOutput></connection><connection><input><id>1</id><stream>0</stream></input><videoOutput><id>1</id><edl><timeScale><numerator>1</numerator><denominator>90000</denominator></timeScale><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase><entry start=\"1000\" length=\"8575200\" mediaRate=\"65536\"/></edl><setting><key>thumbnailStartOffset</key><value>0@25000</value></setting><generateThumbnails><uri>https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1</uri><bulkyMetadataURI>https://vidispine5-dev.gnm.int/API/item/VX-212/metadata/bulky</bulkyMetadataURI></generateThumbnails></videoOutput></connection></ComplexJobDocument>"
+    },
+    {
+      "key": "type",
+      "value": "ESSENCE_VERSION"
+    },
+    {
+      "key": "growing",
+      "value": "false"
+    },
+    {
+      "key": "transcodeJobType",
+      "value": "complexJob"
+    },
+    {
+      "key": "currentStepNumber",
+      "value": "9"
+    },
+    {
+      "key": "sourceUri",
+      "value": "file:///srv/Multimedia2/NextGenDev/Media%20Production/Deliverables/Another%20regular%20user%20project/200914Milliband.mp4"
+    },
+    {
+      "key": "project_id",
+      "value": "62"
+    },
+    {
+      "key": "fileIds",
+      "value": "VX-705"
+    },
+    {
+      "key": "transcodeProgress",
+      "value": "100.0"
+    },
+    {
+      "key": "noTranscode",
+      "value": "false"
+    },
+    {
+      "key": "action",
+      "value": "STOP"
+    },
+    {
+      "key": "transcoder",
+      "value": "http://10.235.51.119:8888/"
+    },
+    {
+      "key": "jobStatusDocument",
+      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><JobStatusDocument xmlns=\"http://xml.vidispine.com/schema/vidispine\"><statusUri>http://127.0.0.1:8888/job/VX-237</statusUri><id>VX-237</id><isRunning>false</isRunning><isPaused>false</isPaused><walltime>11.0873</walltime><exitcode>0</exitcode><message>Job ended successfully</message><log level=\"CC\">&lt;?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?&gt;&lt;BulkyMetadataDocument xmlns=\"http://xml.vidispine.com/schema/vidispine\"/&gt;</log><request><complexRequest><input><id>1</id><uri>file:///srv/Multimedia2/NextGenDev/Proxies/VX-704.mp4</uri></input><output><id>1</id><uri>file:///srv/Multimedia2/NextGenDev/Proxies/VX-705.mov</uri><containerFormat>mov</containerFormat><metadata><key>fileId</key><value>VX-705</value></metadata></output><connection><input><id>1</id><stream>1</stream></input><audioOutput><id>1</id></audioOutput></connection><connection><input><id>1</id><stream>0</stream></input><videoOutput><id>1</id><edl><timeScale><numerator>1</numerator><denominator>90000</denominator></timeScale><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase><entry start=\"1000\" length=\"8575200\" mediaRate=\"65536\"/></edl><setting><key>thumbnailStartOffset</key><value>0@25000</value></setting><generateThumbnails><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747</uri><bulkyMetadataURI>https://vidispine5-dev.gnm.int/APInoauth/bulky-put/f9124efb-51c9-4f77-8d59-5551c83dc736?null</bulkyMetadataURI></generateThumbnails></videoOutput></connection></complexRequest></request><inputProgress><mediaTime><samples>2382000</samples><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase></mediaTime><duration><samples>95280000</samples><timeBase><numerator>1</numerator><denominator>1000000</denominator></timeBase></duration></inputProgress><progress>100.0</progress><estimatedTimeLeft>0.0</estimatedTimeLeft><thumbnail><timeCode><samples>0</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/0@50</uri></thumbnail><thumbnail><timeCode><samples>500</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/500@50</uri></thumbnail><thumbnail><timeCode><samples>1000</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/1000@50</uri></thumbnail><thumbnail><timeCode><samples>1500</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/1500@50</uri></thumbnail><thumbnail><timeCode><samples>2000</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/2000@50</uri></thumbnail><thumbnail><timeCode><samples>2500</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/2500@50</uri></thumbnail><thumbnail><timeCode><samples>3000</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/3000@50</uri></thumbnail><thumbnail><timeCode><samples>3500</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/3500@50</uri></thumbnail><thumbnail><timeCode><samples>4000</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/4000@50</uri></thumbnail><thumbnail><timeCode><samples>4500</samples><timeBase><numerator>1</numerator><denominator>50</denominator></timeBase></timeCode><uri>https://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747/4500@50</uri></thumbnail></JobStatusDocument>"
+    },
+    {
+      "key": "transcodeDone",
+      "value": "true"
+    },
+    {
+      "key": "deleteFileOnFailure",
+      "value": "true"
+    },
+    {
+      "key": "transferWallTime-200-0",
+      "value": "0.241"
+    },
+    {
+      "key": "sequenceNumber",
+      "value": "0"
+    },
+    {
+      "key": "item",
+      "value": "VX-212"
+    },
+    {
+      "key": "filePathMap",
+      "value": "VX-704=VX-704.mp4,VX-705=VX-705.mov"
+    },
+    {
+      "key": "transcoderId",
+      "value": "VX-1"
+    },
+    {
+      "key": "currentStepStatus",
+      "value": "FINISHED"
+    },
+    {
+      "key": "sourceFileIds",
+      "value": "VX-704"
+    },
+    {
+      "key": "transfer-method",
+      "value": "normal"
+    },
+    {
+      "key": "tags",
+      "value": "original"
+    },
+    {
+      "key": "progress-200-0-0",
+      "value": "bytes 119027351/119027351"
+    },
+    {
+      "key": "jobId",
+      "value": "VX-237"
+    },
+    {
+      "key": "itemId",
+      "value": "VX-212"
+    },
+    {
+      "key": "transcodeEstimatedTimeLeft",
+      "value": "0.0"
+    },
+    {
+      "key": "transferDone",
+      "value": "true"
+    },
+    {
+      "key": "import_source",
+      "value": "pluto-deliverables"
+    },
+    {
+      "key": "status",
+      "value": "FINISHED"
+    },
+    {
+      "key": "fileId",
+      "value": "VX-704"
+    },
+    {
+      "key": "closeProxyURI160",
+      "value": "file:///srv/Multimedia2/NextGenDev/Proxies/VX-704.mp4\nfile:///srv/Multimedia2/NextGenDev/Proxies/VX-705.mov\nhttps://vidispine5-dev.gnm.int/APInoauth/thumbnail-put/72faacc0-7572-451f-97da-c828ac726747\nhttps://vidispine5-dev.gnm.int/APInoauth/bulky-put/f9124efb-51c9-4f77-8d59-5551c83dc736?null"
+    },
+    {
+      "key": "transferProgress-200-0",
+      "value": "100.0"
+    },
+    {
+      "key": "transcodeShapeDocument",
+      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><ShapeDocument xmlns=\"http://xml.vidispine.com/schema/vidispine\"><containerComponent><file><uri>file:/srv/Multimedia2/NextGenDev/Proxies/VX-705.mov</uri><state>CLOSED</state><refreshFlag>0</refreshFlag></file><metadata><key>compatible_brands</key><value>mp42mp41</value></metadata><metadata><key>creation_time</key><value>2020-09-23 13:40:52</value></metadata><metadata><key>drop_frame</key><value>false</value></metadata><metadata><key>encoder</key><value>Lavf54.128.100</value></metadata><metadata><key>fileId</key><value>VX-705</value></metadata><metadata><key>major_brand</key><value>mp42</value></metadata><metadata><key>minor_version</key><value>0</value></metadata><metadata><key>rounded_time_base</key><value>25</value></metadata><metadata><key>start_timecode</key><value>0</value></metadata><metadata><key>transcoder_version</key><value>5.2.2-g3499146-33</value></metadata><duration><samples>95280000</samples><timeBase><numerator>1</numerator><denominator>1000000</denominator></timeBase></duration><format>mov,mp4,m4a,3gp,3g2,mj2</format><firstSMPTETimecode>00:00:00:00</firstSMPTETimecode><startTimecode>0</startTimecode><startTimestamp><samples>0</samples><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase></startTimestamp><roundedTimeBase>25</roundedTimeBase><dropFrame>false</dropFrame><timeCodeTimeBase><numerator>1</numerator><denominator>25</denominator></timeCodeTimeBase></containerComponent><audioComponent><file><uri>file:/srv/Multimedia2/NextGenDev/Proxies/VX-705.mov</uri><state>CLOSED</state><refreshFlag>0</refreshFlag></file><metadata><key>creation_time</key><value>2020-09-23 13:40:52</value></metadata><metadata><key>handler_name</key><value>DataHandler</value></metadata><metadata><key>language</key><value>eng</value></metadata><codec>aac</codec><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase><itemTrack>A1</itemTrack><essenceStreamId>0</essenceStreamId><bitrate>317375</bitrate><numberOfPackets>4466</numberOfPackets><extradata>1190</extradata><pid>1</pid><duration><samples>4573184</samples><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase></duration><edl><timeScale><numerator>1</numerator><denominator>25000</denominator></timeScale><entry start=\"0\" length=\"2382000\" mediaRate=\"65536\"/></edl><startTimestamp><samples>0</samples><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase></startTimestamp><channelCount>2</channelCount><channelLayout>3</channelLayout><sampleFormat>AV_SAMPLE_FMT_S16</sampleFormat><frameSize>1024</frameSize></audioComponent><videoComponent><file><uri>file:/srv/Multimedia2/NextGenDev/Proxies/VX-705.mov</uri><state>CLOSED</state><refreshFlag>0</refreshFlag></file><metadata><key>creation_time</key><value>2020-09-23 13:40:52</value></metadata><metadata><key>handler_name</key><value>DataHandler</value></metadata><metadata><key>language</key><value>eng</value></metadata><metadata><key>timecode</key><value>00:00:00:00</value></metadata><codec>h264</codec><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase><itemTrack>V1</itemTrack><essenceStreamId>1</essenceStreamId><bitrate>9670770</bitrate><numberOfPackets>2382</numberOfPackets><extradata>014D4029FFE10019674D4029965280F0044FCB3501010140000003004000000CA101000568E9093520</extradata><pid>2</pid><duration><samples>2382000</samples><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase></duration><profile>77</profile><level>41</level><edl><timeScale><numerator>1</numerator><denominator>25000</denominator></timeScale><entry start=\"1000\" length=\"2382000\" mediaRate=\"65536\"/></edl><startTimestamp><samples>0</samples><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase></startTimestamp><resolution><width>1920</width><height>1080</height></resolution><pixelFormat>yuv420p</pixelFormat><maxBFrames>1</maxBFrames><pixelAspectRatio><horizontal>1</horizontal><vertical>1</vertical></pixelAspectRatio><fieldOrder>progressive</fieldOrder><codecTimeBase><numerator>1</numerator><denominator>50</denominator></codecTimeBase><averageFrameRate><numerator>25</numerator><denominator>1</denominator></averageFrameRate><realBaseFrameRate><numerator>25</numerator><denominator>1</denominator></realBaseFrameRate><displayWidth><numerator>1920</numerator><denominator>1</denominator></displayWidth><displayHeight><numerator>1080</numerator><denominator>1</denominator></displayHeight><max_packet_size>797362</max_packet_size><ticks_per_frame>2</ticks_per_frame><bitDepth>8</bitDepth><bitsPerPixel>12</bitsPerPixel></videoComponent></ShapeDocument>"
+    },
+    {
+      "key": "shapeIds",
+      "value": "VX-407"
+    },
+    {
+      "key": "vidinet",
+      "value": "false"
+    },
+    {
+      "key": "shapeDocument",
+      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><ShapeDocument xmlns=\"http://xml.vidispine.com/schema/vidispine\"><containerComponent><file><uri>file:/srv/Multimedia2/NextGenDev/Proxies/VX-704.mp4</uri><state>CLOSED</state><refreshFlag>0</refreshFlag></file><metadata><key>compatible_brands</key><value>mp42mp41</value></metadata><metadata><key>creation_time</key><value>2020-09-14 18:24:42</value></metadata><metadata><key>major_brand</key><value>mp42</value></metadata><metadata><key>minor_version</key><value>0</value></metadata><duration><samples>95280000</samples><timeBase><numerator>1</numerator><denominator>1000000</denominator></timeBase></duration><format>mov,mp4,m4a,3gp,3g2,mj2</format><startTimestamp><samples>0</samples><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase></startTimestamp><mediaInfo><property><key>Audio codecs</key><value>AAC LC</value></property><property><key>Audio_Format_List</key><value>AAC</value></property><property><key>Audio_Format_WithHint_List</key><value>AAC</value></property><property><key>Audio_Language_List</key><value>English</value></property><property><key>Codec</key><value>MPEG-4</value></property><property><key>Codec ID</key><value>mp42</value></property><property><key>Codec ID/Url</key><value>http://www.apple.com/quicktime/download/standalone.html</value></property><property><key>Codec/Extensions usually used</key><value>mov mp4 m4v m4a m4b m4p 3ga 3gpa 3gpp 3gp 3gpp2 3g2 k3g jpm jpx mqv ismv isma ismt f4a f4b f4v</value></property><property><key>CodecID_Compatible</key><value>mp42/mp41</value></property><property><key>Codecs Video</key><value>AVC</value></property><property><key>Commercial name</key><value>MPEG-4</value></property><property><key>Count</key><value>328</value></property><property><key>Count of audio streams</key><value>1</value></property><property><key>Count of stream of this kind</key><value>1</value></property><property><key>Count of video streams</key><value>1</value></property><property><key>DataSize</key><value>118958612</value></property><property><key>Duration</key><value>95280</value></property><property><key>Encoded date</key><value>UTC 2020-09-14 18:24:42</value></property><property><key>File extension</key><value>mp4</value></property><property><key>File last modification date</key><value>UTC 2020-09-23 12:40:51</value></property><property><key>File last modification date (local)</key><value>2020-09-23 13:40:51</value></property><property><key>File size</key><value>119027351</value></property><property><key>FooterSize</key><value>0</value></property><property><key>Format</key><value>MPEG-4</value></property><property><key>Format profile</key><value>Base Media / Version 2</value></property><property><key>Format/Extensions usually used</key><value>mov mp4 m4v m4a m4b m4p 3ga 3gpa 3gpp 3gp 3gpp2 3g2 k3g jpm jpx mqv ismv isma ismt f4a f4b f4v</value></property><property><key>Frame count</key><value>2382</value></property><property><key>Frame rate</key><value>25.000</value></property><property><key>HeaderSize</key><value>68739</value></property><property><key>Internet media type</key><value>video/mp4</value></property><property><key>IsStreamable</key><value>Yes</value></property><property><key>Kind of stream</key><value>General</value></property><property><key>Overall bit rate</key><value>9993900</value></property><property><key>Proportion of this stream</key><value>0.00058</value></property><property><key>Stream identifier</key><value>0</value></property><property><key>Stream size</key><value>68755</value></property><property><key>Tagged date</key><value>UTC 2020-09-14 18:25:33</value></property><property><key>Video_Format_List</key><value>AVC</value></property><property><key>Video_Format_WithHint_List</key><value>AVC</value></property><property><key>Video_Language_List</key><value>English</value></property><property><key>©TIM</key><value>00:00:00:00</value></property><property><key>©TSC</key><value>25</value></property><property><key>©TSZ</key><value>1</value></property></mediaInfo></containerComponent><audioComponent><file><uri>file:/srv/Multimedia2/NextGenDev/Proxies/VX-704.mp4</uri><state>CLOSED</state><refreshFlag>0</refreshFlag></file><metadata><key>creation_time</key><value>2020-09-14 18:24:45</value></metadata><metadata><key>handler_name</key><value>lias Data Handler</value></metadata><metadata><key>language</key><value>eng</value></metadata><codec>aac</codec><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase><itemTrack>A1</itemTrack><essenceStreamId>1</essenceStreamId><bitrate>317375</bitrate><numberOfPackets>4466</numberOfPackets><extradata>1190</extradata><pid>2</pid><duration><samples>4573184</samples><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase></duration><edl><timeScale><numerator>1</numerator><denominator>90000</denominator></timeScale><entry start=\"0\" length=\"8575200\" mediaRate=\"65536\"/></edl><startTimestamp><samples>0</samples><timeBase><numerator>1</numerator><denominator>48000</denominator></timeBase></startTimestamp><channelCount>2</channelCount><channelLayout>3</channelLayout><sampleFormat>AV_SAMPLE_FMT_S16</sampleFormat><frameSize>1024</frameSize><mediaInfo><Bit_rate_mode>CBR</Bit_rate_mode><property><key>Bit rate</key><value>317375</value></property><property><key>Bit rate mode</key><value>CBR</value></property><property><key>Channel positions</key><value>2/0/0</value></property><property><key>Channel(s)</key><value>2</value></property><property><key>ChannelLayout</key><value>L R</value></property><property><key>Codec</key><value>AAC LC</value></property><property><key>Codec ID</key><value>40</value></property><property><key>Codec/CC</key><value>40</value></property><property><key>Codec/Family</key><value>AAC</value></property><property><key>Commercial name</key><value>AAC</value></property><property><key>Compression mode</key><value>Lossy</value></property><property><key>Count</key><value>275</value></property><property><key>Count of stream of this kind</key><value>1</value></property><property><key>Duration</key><value>95280</value></property><property><key>Encoded date</key><value>UTC 2020-09-14 18:24:45</value></property><property><key>Format</key><value>AAC</value></property><property><key>Format profile</key><value>LC</value></property><property><key>Format/Info</key><value>Advanced Audio Codec</value></property><property><key>Frame count</key><value>4466</value></property><property><key>Frame rate</key><value>46.875</value></property><property><key>ID</key><value>2</value></property><property><key>Kind of stream</key><value>Audio</value></property><property><key>Language</key><value>en</value></property><property><key>Proportion of this stream</key><value>0.03176</value></property><property><key>Samples count</key><value>4573440</value></property><property><key>Samples per frame</key><value>1024</value></property><property><key>Sampling rate</key><value>48000</value></property><property><key>Source duration</key><value>95275</value></property><property><key>Source frame count</key><value>4466</value></property><property><key>Source stream size</key><value>3779725</value></property><property><key>Source_StreamSize_Proportion</key><value>0.03176</value></property><property><key>Stream identifier</key><value>0</value></property><property><key>Stream size</key><value>3779725</value></property><property><key>StreamOrder</key><value>1</value></property><property><key>Tagged date</key><value>UTC 2020-09-14 18:24:45</value></property></mediaInfo></audioComponent><videoComponent><file><uri>file:/srv/Multimedia2/NextGenDev/Proxies/VX-704.mp4</uri><state>CLOSED</state><refreshFlag>0</refreshFlag></file><metadata><key>creation_time</key><value>2020-09-14 18:24:43</value></metadata><metadata><key>handler_name</key><value>lias Data Handler</value></metadata><metadata><key>language</key><value>eng</value></metadata><codec>h264</codec><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase><itemTrack>V1</itemTrack><essenceStreamId>0</essenceStreamId><bitrate>9670770</bitrate><numberOfPackets>2382</numberOfPackets><extradata>014D4029FFE10019674D4029965280F0044FCB3501010140000003004000000CA101000568E9093520</extradata><pid>1</pid><duration><samples>2382000</samples><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase></duration><profile>77</profile><level>41</level><edl><timeScale><numerator>1</numerator><denominator>90000</denominator></timeScale><entry start=\"1000\" length=\"8575200\" mediaRate=\"65536\"/></edl><startTimestamp><samples>0</samples><timeBase><numerator>1</numerator><denominator>25000</denominator></timeBase></startTimestamp><resolution><width>1920</width><height>1080</height></resolution><pixelFormat>yuv420p</pixelFormat><maxBFrames>1</maxBFrames><pixelAspectRatio><horizontal>1</horizontal><vertical>1</vertical></pixelAspectRatio><fieldOrder>progressive</fieldOrder><codecTimeBase><numerator>1</numerator><denominator>50</denominator></codecTimeBase><averageFrameRate><numerator>25</numerator><denominator>1</denominator></averageFrameRate><realBaseFrameRate><numerator>25</numerator><denominator>1</denominator></realBaseFrameRate><displayWidth><numerator>1920</numerator><denominator>1</denominator></displayWidth><displayHeight><numerator>1080</numerator><denominator>1</denominator></displayHeight><max_packet_size>797362</max_packet_size><ticks_per_frame>2</ticks_per_frame><bitDepth>8</bitDepth><bitsPerPixel>12</bitsPerPixel><mediaInfo><property><key>Bit depth</key><value>8</value></property><property><key>Bit rate</key><value>9670770</value></property><property><key>Bits/(Pixel*Frame)</key><value>0.187</value></property><property><key>Chroma subsampling</key><value>4:2:0</value></property><property><key>Codec</key><value>AVC</value></property><property><key>Codec ID</key><value>avc1</value></property><property><key>Codec ID/Info</key><value>Advanced Video Coding</value></property><property><key>Codec profile</key><value>Main@L4.1</value></property><property><key>Codec settings</key><value>CABAC / 4 Ref Frames</value></property><property><key>Codec settings, CABAC</key><value>Yes</value></property><property><key>Codec/CC</key><value>avc1</value></property><property><key>Codec/Family</key><value>AVC</value></property><property><key>Codec/Info</key><value>Advanced Video Codec</value></property><property><key>Codec/Url</key><value>http://developers.videolan.org/x264.html</value></property><property><key>Codec_Settings_RefFrames</key><value>4</value></property><property><key>Color primaries</key><value>BT.709</value></property><property><key>Color range</key><value>Limited</value></property><property><key>Color space</key><value>YUV</value></property><property><key>Colorimetry</key><value>4:2:0</value></property><property><key>Commercial name</key><value>AVC</value></property><property><key>Count</key><value>338</value></property><property><key>Count of stream of this kind</key><value>1</value></property><property><key>Display aspect ratio</key><value>1.778</value></property><property><key>Duration</key><value>95280</value></property><property><key>Encoded date</key><value>UTC 2020-09-14 18:24:43</value></property><property><key>Format</key><value>AVC</value></property><property><key>Format profile</key><value>Main@L4.1</value></property><property><key>Format settings</key><value>CABAC / 4 Ref Frames</value></property><property><key>Format settings, CABAC</key><value>Yes</value></property><property><key>Format settings, ReFrames</key><value>4</value></property><property><key>Format/Info</key><value>Advanced Video Codec</value></property><property><key>Format/Url</key><value>http://developers.videolan.org/x264.html</value></property><property><key>Frame count</key><value>2382</value></property><property><key>Frame rate</key><value>25.000</value></property><property><key>Frame rate mode</key><value>CFR</value></property><property><key>Height</key><value>1080</value></property><property><key>ID</key><value>1</value></property><property><key>Interlacement</key><value>PPF</value></property><property><key>Internet media type</key><value>video/H264</value></property><property><key>Kind of stream</key><value>Video</value></property><property><key>Language</key><value>en</value></property><property><key>Matrix coefficients</key><value>BT.709</value></property><property><key>Pixel aspect ratio</key><value>1.000</value></property><property><key>Proportion of this stream</key><value>0.96767</value></property><property><key>Resolution</key><value>8</value></property><property><key>Rotation</key><value>0.000</value></property><property><key>Sampled_Height</key><value>1080</value></property><property><key>Sampled_Width</key><value>1920</value></property><property><key>Scan type</key><value>Progressive</value></property><property><key>Stored_Height</key><value>1088</value></property><property><key>Stream identifier</key><value>0</value></property><property><key>Stream size</key><value>115178871</value></property><property><key>StreamOrder</key><value>0</value></property><property><key>Tagged date</key><value>UTC 2020-09-14 18:24:43</value></property><property><key>Transfer characteristics</key><value>BT.709</value></property><property><key>Width</key><value>1920</value></property><property><key>colour_description_present</key><value>Yes</value></property></mediaInfo></videoComponent></ShapeDocument>"
+    },
+    {
+      "key": "progress-600-0-0",
+      "value": "percent 100.0/100"
+    },
+    {
+      "key": "bytesWritten",
+      "value": "119027351"
+    },
+    {
+      "key": "createThumbnails",
+      "value": "true"
+    },
+    {
+      "key": "started",
+      "value": "2020-09-23T12:40:50.683Z"
+    },
+    {
+      "key": "transcodeDurations",
+      "value": "95280000@1000000"
+    },
+    {
+      "key": "transferEstimatedTimeLeft-200-0",
+      "value": "2.868559135E7"
+    },
+    {
+      "key": "fileShapeMap",
+      "value": "VX-705=VX-407"
+    },
+    {
+      "key": "baseUri",
+      "value": "http://vidispine-server.vidispine5-test.svc.cluster.local:8080/API/"
+    },
+    {
+      "key": "useCloudConvert",
+      "value": "false"
+    },
+    {
+      "key": "transcodeMediaTimes",
+      "value": "2382000@25000"
+    },
+    {
+      "key": "thumbnails",
+      "value": "{\"[TC:500@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/500@50\",\"[TC:0@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/0@50\",\"[TC:3000@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/3000@50\",\"[TC:4000@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/4000@50\",\"[TC:1000@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/1000@50\",\"[TC:2000@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/2000@50\",\"[TC:1500@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/1500@50\",\"[TC:2500@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/2500@50\",\"[TC:3500@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/3500@50\",\"[TC:4500@50]\":\"https://vidispine5-dev.gnm.int/API/thumbnail/VX-2/VX-212;version=1/4500@50\"}"
+    },
+    {
+      "key": "user",
+      "value": "videoproducer1"
+    },
+    {
+      "key": "originalFilename",
+      "value": "200914Milliband.mp4"
+    }
+  ]
+}

@@ -188,6 +188,7 @@ SESSION_NAME="pluto-atomresponder"  #Session description for temporary credentia
 ### Ingest parameters
 ATOM_RESPONDER_SHAPE_TAG=os.environ.get("ATOM_RESPONDER_SHAPE_TAG", "lowres")
 ATOM_RESPONDER_IMPORT_PRIORITY=os.environ.get("ATOM_RESPONDER_IMPORT_PRIORITY", "HIGH")
+MAX_IMPORT_RETRIES = os.environ.get("MAX_IMPORT_RETRIES", 10)
 
 ### Connection to media atom tool, for resending
 ATOM_TOOL_HOST='https://atomtool'

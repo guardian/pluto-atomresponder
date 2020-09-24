@@ -1,9 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.views.generic.list import ListView
-from django.http import HttpResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,11 +19,10 @@ class JobNotifyView(APIView):
         :param request: Django request object
         :return: Response
         """
-        from .job_notification import JobNotification
+        from rabbitmq.job_notification import JobNotification
         from lxml.etree import XMLSyntaxError, LxmlError
         from .notification import process_notification
         from .models import ImportJob
-        import traceback
 
         logger.info("Received import notification")
         try:

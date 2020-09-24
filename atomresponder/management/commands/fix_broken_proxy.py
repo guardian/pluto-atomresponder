@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.management.base import BaseCommand
 import logging
 
@@ -9,7 +8,7 @@ class Command(BaseCommand):
     help = "Checks for a broken lowres proxy and rebuilds it if necessary"
 
     def handle(self, *args, **options):
-        from atomresponder.transcode_check import check_for_broken_proxy, delete_existing_proxy, transcode_proxy
+        from rabbitmq.transcode_check import check_for_broken_proxy, delete_existing_proxy, transcode_proxy
         item_id = args[0]
         if item_id is None:
             print("You must specify the item id to fix as the first and only argument")

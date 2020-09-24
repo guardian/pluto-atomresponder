@@ -9,24 +9,14 @@ class JobNotification(object):
     """
     This class abstracts the Vidispine job notification document to allow for easier reading
     """
-    ns = "{http://xml.vidispine.com/schema/vidispine}"
 
-    def __init__(self, xmlstring):
-        if isinstance(xmlstring, bytes):
-            xmldata = xmlstring
-        elif isinstance(xmlstring, str):
-            xmldata = xmlstring.encode("UTF-8")
-        else:
-            raise TypeError("JobNotification must be initialised with a bytestring or utf string, not {0}".format(xmlstring.__class__.__name__))
-
-        self.parsedContent = ET.fromstring(xmldata)
+    def __init__(self, jsondict: dict):
+        self._content = jsondict
 
     def __getattr__(self, item):
-        for keynode in self.parsedContent.findall("{ns}field/{ns}key".format(ns=self.ns)):
-            if keynode.text==item:
-                valnode = keynode.find("../{ns}value".format(ns=self.ns))
-                if valnode is not None:
-                    return valnode.text
+        for entry in self._content["field"]:
+            if entry["key"]==item:
+                return entry["value"]
         return None
 
     def __str__(self):

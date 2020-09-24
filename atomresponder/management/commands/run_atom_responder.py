@@ -14,21 +14,11 @@ class Command(KinesisResponderBaseCommand):
     session_name = "GNMAtomResponder"
 
     def handle(self, *args, **options):
-        from atomresponder.notification import find_notification, create_notification
         from kinesisresponder.sentry import inform_sentry_exception
         import traceback
         import xml.etree.cElementTree as ET
         from gnmvidispine.vs_external_id import ExternalIdNamespace
         from gnmvidispine.vidispine_api import VSNotFound
-
-        notification_uri = find_notification()
-        if notification_uri is None:
-            logger.info("Callback notification not present in Vidispine. Installing...")
-            create_notification()
-            notification_uri = find_notification()
-            if notification_uri is None:
-                raise RuntimeError("Unable to install notification into Vidispine")
-        logger.info("Notification URI is at {0}".format(notification_uri))
 
         #ensure that the namespace for our external IDs is present. If not, create it.
         #this is to make it simple for LaunchDetector to look up items by atom ID
