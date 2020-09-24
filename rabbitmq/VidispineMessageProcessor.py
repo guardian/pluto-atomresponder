@@ -79,18 +79,31 @@ class VidispineMessageProcessor(MessageProcessor):
     @staticmethod
     def handle_failed_job(import_job):
         """
-        If the job failed, request a resend with an exponential delay
+        If the job failed, request a resend
         :param import_job: ImportJob model instance representing the failed job
         :return:
         """
-        ##FIXME: still needs implementing
-        from .tasks import timed_request_resend
+        from atomresponder.media_atom import request_atom_resend
+        from kinesisresponder.sentry import inform_sentry_exception
+        max_retries = getattr(settings, "MAX_IMPORT_RETRIES", 10)
 
         logger.info("{0} ({1}): failed on attempt {2}".format(import_job.item_id, import_job.atom_id, import_job.retry_number))
-        retry_delay = 4 ** (import_job.retry_number+1)
-        if retry_delay>3600:    #cap it at 1 hour
-            retry_delay=3600
 
-        logger.info("{0} ({1}): retrying after {2} seconds (via Celery)".format(import_job.item_id, import_job.atom_id, retry_delay))
+        if import_job.retry_number > max_retries:
+            logger.error("{0}: Have already retried {1} times, giving up".format(import_job.atom_id, import_job.retry_number))
+            import_job.completed_at = datetime.now(tz=pytz.timezone(time_zone))
+            import_job.status = "FAILED_TOTAL"
+            import_job.processing = False
+            import_job.save()
+            return
 
-        timed_request_resend.apply_async(args=(import_job.atom_id, ), countdown=retry_delay)
+        import_job.retry_number += 1
+        import_job.save()
+
+        try:
+            logger.info("Requesting resend of atom {0}".format(import_job.atom_id))
+            request_atom_resend(import_job.atom_id, settings.ATOM_TOOL_HOST, settings.ATOM_TOOL_SECRET)
+            logger.info("Resend of atom {0} done".format(import_job.atom_id))
+        except Exception as e:
+            logger.error(e)
+            inform_sentry_exception()

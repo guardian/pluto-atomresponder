@@ -159,26 +159,7 @@
 #         pac_record.delete()
 #     logger.info("expire_processed_pacrecords completed")
 #
-#
-# @shared_task
-# def timed_request_resend(atom_id, **kwargs):
-#     """
-#     task that can run after a delay to request that an item is resent
-#     :param atom_id:  atom id to resend
-#     :return:
-#     """
-#     from .media_atom import request_atom_resend
-#     from portal.plugins.kinesisresponder.sentry import inform_sentry_exception
-#
-#     try:
-#         logger.info("Requesting resend of atom {0}".format(atom_id))
-#         request_atom_resend(atom_id, settings.ATOM_TOOL_HOST, settings.ATOM_TOOL_SECRET)
-#         logger.info("Resend of atom {0} done".format(atom_id))
-#     except Exception as e:
-#         logger.error(e)
-#         inform_sentry_exception()
-#         raise
-#
+
 #
 # @shared_task
 # def timed_retry_process_message(record, approx_arrival, attempt=0):
