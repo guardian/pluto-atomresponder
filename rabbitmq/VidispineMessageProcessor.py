@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 time_zone: str = getattr(settings,"TIME_ZONE", "UTC")
 
+
 class VidispineMessageProcessor(MessageProcessor):
     routing_key = "vidispine.job.essence_version.stop"
     # see https://json-schema.org/learn/miscellaneous-examples.html for more details
