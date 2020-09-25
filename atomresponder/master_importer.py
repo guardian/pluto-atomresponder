@@ -29,6 +29,11 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         super(MasterImportResponder, self).__init__(*args, **kwargs)
         self._pika_client = None
 
+        #set up exchange on startup. this also means we terminate if we can't connect to the broker.
+        (conn, channel) = self.setup_pika_channel()
+        channel.close()
+        conn.close()
+
     @staticmethod
     def setup_pika_channel() -> (pika.spec.Connection, pika.spec.Channel):
         conn = pika.BlockingConnection(pika.ConnectionParameters(
@@ -91,6 +96,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             try:
                 logger.info("Updating exchange {} with routing-key {}...".format(settings.RABBITMQ_EXCHANGE, routingkey))
                 channel.basic_publish(settings.RABBITMQ_EXCHANGE, routingkey, json.dumps(message_to_send).encode("UTF-8"))
+                channel.close()
                 conn.close()    #makes sure everything gets flushed nicely
                 break
             except pika.exceptions.UnroutableError:
