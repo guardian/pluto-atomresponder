@@ -30,9 +30,10 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         self._pika_client = None
 
         #set up exchange on startup. this also means we terminate if we can't connect to the broker.
-        (conn, channel) = self.setup_pika_channel()
-        channel.close()
-        conn.close()
+        if not "CI" in os.environ:
+            (conn, channel) = self.setup_pika_channel()
+            channel.close()
+            conn.close()
 
     @staticmethod
     def setup_pika_channel() -> (pika.spec.Connection, pika.spec.Channel):
