@@ -191,9 +191,9 @@ ATOM_RESPONDER_IMPORT_PRIORITY=os.environ.get("ATOM_RESPONDER_IMPORT_PRIORITY", 
 MAX_IMPORT_RETRIES = os.environ.get("MAX_IMPORT_RETRIES", 10)
 
 ### Connection to media atom tool, for resending
-ATOM_TOOL_HOST='https://atomtool'
-ATOM_TOOL_SECRET='sauce'
-GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = "https://launchdetector"
+ATOM_TOOL_HOST=os.environ.get("ATOM_TOOL_HOST", 'https://atomtool')
+ATOM_TOOL_SECRET=os.environ.get("ATOM_TOOL_SECRET", 'sauce')
+GNM_ATOM_RESPONDER_LAUNCHDETECTOR_URL = os.environ.get("LAUNCHDETECTOR_URL", "https://launchdetector")
 
 ### Message queue configuration.
 RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST", "localhost")
