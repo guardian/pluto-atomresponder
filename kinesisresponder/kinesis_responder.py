@@ -95,10 +95,23 @@ class KinesisResponder(Thread):
 
     def run(self):
         """
+        this is called to start up the processing. we delegate to the mainloop() method and use this for exception handling
+        :return:
+        """
+        from sys import exit
+        try:
+            self.mainloop()
+        except Exception as e:
+            logger.error("An uncaught exception occurred when handling shard {}: {}".format(self.shard_id, str(e)))
+            logger.exception("Exception details", exc_info=e)
+            exit(255)   #it's important to force the app to exit so that the process supervisor will restart it and flag a problem
+
+    def mainloop(self):
+        """
         Main loop for processing the stream
         :return:
         """
-        from pprint import pformat,pprint
+        from pprint import pformat
         from .sentry import inform_sentry_exception
         sleep_delay = 1
 
