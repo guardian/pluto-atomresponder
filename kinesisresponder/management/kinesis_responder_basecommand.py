@@ -55,7 +55,7 @@ class KinesisResponderBaseCommand(BaseCommand):
             t.daemon = True
             t.start()
 
-        print("Started up and processing. Hit CTRL-C to stop.")
+        print("Started up and processing. Hit CTRL-C to stop.", flush=True)
         #simplest way to allow ctrl-C when dealing with threads
         try:
             while True:
@@ -65,4 +65,4 @@ class KinesisResponderBaseCommand(BaseCommand):
                         logger.error("A processing thread failed, exiting responder")
                         sys.exit(255)
         except KeyboardInterrupt:
-            print("CTRL-C caught, cleaning up")
+            print("CTRL-C caught, cleaning up", flush=True)
