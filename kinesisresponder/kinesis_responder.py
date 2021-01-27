@@ -141,10 +141,6 @@ class KinesisResponder(Thread):
                     self.refresh_access_credentials()
                 continue
 
-            #FIXME - this code simulates a random failure for testing, REMOVE BEFORE DEPLOYMENT!!
-            if self._random.random()<0.2:
-                raise Exception("test failure")
-
             time_lag = timedelta(seconds=record['MillisBehindLatest']/1000)
             logger.debug("Time lag to this record set is {0}".format(time_lag))
             logger.debug("Record set is dated {0}".format(datetime.now() - time_lag))
