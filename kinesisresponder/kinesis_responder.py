@@ -8,6 +8,7 @@ import logging
 from time import sleep
 from threading import Thread
 import traceback
+from random import Random
 logger = logging.getLogger(__name__)
 
 TRIM_HORIZON = 'TRIM_HORIZON'
@@ -19,6 +20,7 @@ class KinesisResponder(Thread):
     Kinesis responder class that deals with getting stuff from a stream shard.  You can subclass this to do interesting
     things with the messages - simply over-ride the process() method to get called whenever something comes in from the stream.
     """
+
     def __init__(self, role_name, session_name, stream_name, shard_id, aws_access_key_id=None, aws_secret_access_key=None, should_save=True, **kwargs):
         """
         Initialise
@@ -40,6 +42,8 @@ class KinesisResponder(Thread):
         self._aws_access_key_id = aws_access_key_id
         self._aws_secret_access_key = aws_secret_access_key
 
+        self._random = Random()
+        self._random.seed()
         self.refresh_access_credentials()
 
     def refresh_access_credentials(self):
@@ -136,6 +140,10 @@ class KinesisResponder(Thread):
                     logger.warning("Access credentials expired, refreshing...")
                     self.refresh_access_credentials()
                 continue
+
+            #FIXME - this code simulates a random failure for testing, REMOVE BEFORE DEPLOYMENT!!
+            if self._random.random()<0.2:
+                raise Exception("test failure")
 
             time_lag = timedelta(seconds=record['MillisBehindLatest']/1000)
             logger.debug("Time lag to this record set is {0}".format(time_lag))
