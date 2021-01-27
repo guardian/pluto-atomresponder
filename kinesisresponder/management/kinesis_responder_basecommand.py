@@ -62,7 +62,7 @@ class KinesisResponderBaseCommand(BaseCommand):
                 sleep(60)
                 for t in threadlist:
                     if not t.is_alive():
-                        logger.error("Thread {} failed, exiting responder".format(t.get_ident()))
+                        logger.error("A processing thread failed, exiting responder")
                         sys.exit(255)
         except KeyboardInterrupt:
             print("CTRL-C caught, cleaning up")
