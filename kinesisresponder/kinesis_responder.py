@@ -108,7 +108,7 @@ class KinesisResponder(Thread):
         except Exception as e:
             logger.error("An uncaught exception occurred when handling shard {}: {}".format(self.shard_id, str(e)))
             logger.exception("Exception details", exc_info=e)
-            exit(255)   #it's important to force the app to exit so that the process supervisor will restart it and flag a problem
+            exit(255)   #this only exits the thread, BUT we catch that again higher up...
 
     def mainloop(self):
         """
