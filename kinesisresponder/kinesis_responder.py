@@ -8,6 +8,7 @@ import logging
 from time import sleep
 from threading import Thread
 import traceback
+from random import Random
 logger = logging.getLogger(__name__)
 
 TRIM_HORIZON = 'TRIM_HORIZON'
@@ -19,6 +20,7 @@ class KinesisResponder(Thread):
     Kinesis responder class that deals with getting stuff from a stream shard.  You can subclass this to do interesting
     things with the messages - simply over-ride the process() method to get called whenever something comes in from the stream.
     """
+
     def __init__(self, role_name, session_name, stream_name, shard_id, aws_access_key_id=None, aws_secret_access_key=None, should_save=True, **kwargs):
         """
         Initialise
@@ -40,6 +42,8 @@ class KinesisResponder(Thread):
         self._aws_access_key_id = aws_access_key_id
         self._aws_secret_access_key = aws_secret_access_key
 
+        self._random = Random()
+        self._random.seed()
         self.refresh_access_credentials()
 
     def refresh_access_credentials(self):
@@ -95,10 +99,23 @@ class KinesisResponder(Thread):
 
     def run(self):
         """
+        This is called to start up the processing. We delegate to the mainloop() method and use this for exception handling
+        :return:
+        """
+        from sys import exit
+        try:
+            self.mainloop()
+        except Exception as e:
+            logger.error("An uncaught exception occurred when handling shard {}: {}".format(self.shard_id, str(e)))
+            logger.exception("Exception details: ", exc_info=e)
+            exit(255)   #this only exits the thread, BUT we catch that again higher up...
+
+    def mainloop(self):
+        """
         Main loop for processing the stream
         :return:
         """
-        from pprint import pformat,pprint
+        from pprint import pformat
         from .sentry import inform_sentry_exception
         sleep_delay = 1
 
