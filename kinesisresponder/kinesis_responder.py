@@ -99,7 +99,7 @@ class KinesisResponder(Thread):
 
     def run(self):
         """
-        this is called to start up the processing. we delegate to the mainloop() method and use this for exception handling
+        This is called to start up the processing. We delegate to the mainloop() method and use this for exception handling
         :return:
         """
         from sys import exit
@@ -107,7 +107,7 @@ class KinesisResponder(Thread):
             self.mainloop()
         except Exception as e:
             logger.error("An uncaught exception occurred when handling shard {}: {}".format(self.shard_id, str(e)))
-            logger.exception("Exception details", exc_info=e)
+            logger.exception("Exception details: ", exc_info=e)
             exit(255)   #this only exits the thread, BUT we catch that again higher up...
 
     def mainloop(self):
