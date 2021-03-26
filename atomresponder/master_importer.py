@@ -139,7 +139,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         :return:
         """
         from .media_atom import request_atom_resend, HttpError
-        content = json.loads(record)
+        content = json.loads(record) ###hmm we should probably apply some validation here
 
         logger.info(content)
 
@@ -152,7 +152,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             master_item, created = self.get_or_create_master_item(content['atomId'],
                                                                   title=content['title'],
                                                                   filename=content['s3Key'],
-                                                                  project_id=content['projectId'],
+                                                                  project_id=content['projectId'], ###project_id is the field that will become optional
                                                                   user=atom_user)
 
             return self.import_new_item(master_item, content)
