@@ -265,7 +265,8 @@ class TestMasterImporter(django.test.TestCase):
 
         fake_message = json.dumps({
             "type": const.MESSAGE_TYPE_PROJECT_ASSIGNED,
-            "atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406"
+            "atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406",
+            "projectId": "12345"
         })
 
         with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
@@ -292,7 +293,8 @@ class TestMasterImporter(django.test.TestCase):
 
         fake_message = json.dumps({
             "type": const.MESSAGE_TYPE_PROJECT_ASSIGNED,
-            "atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406"
+            "atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406",
+            "projectId": "12345"
         })
 
         fake_response = json.dumps({
@@ -324,7 +326,8 @@ class TestMasterImporter(django.test.TestCase):
 
         fake_message = json.dumps({
             "type": const.MESSAGE_TYPE_PROJECT_ASSIGNED,
-            "atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406"
+            "atomId": "603CBB6C-A32D-4BD6-8053-CDEA99DC5406",
+            "projectId": "12345"
         })
 
         fake_response = json.dumps({
@@ -341,6 +344,33 @@ class TestMasterImporter(django.test.TestCase):
                         m.process(fake_message, 0, attempt=10)
 
                     mock_request_resend.assert_called_once_with("603CBB6C-A32D-4BD6-8053-CDEA99DC5406", settings.ATOM_TOOL_HOST, settings.ATOM_TOOL_SECRET)
+
+    def test_process_invalidmessage(self):
+        """
+        if the message is missing a type field or is invalid, process should no throw an exception but log and exit
+        :return:
+        """
+        from atomresponder.master_importer import MasterImportResponder
+        import json
+        import atomresponder.constants as const
+
+        invalid_message_1 = json.dumps({
+            "dfsdfsfdf": "fsdfjhsfsfs"
+        })
+        invalid_message_2 = json.dumps({
+            "type": "something random"
+        })
+        invalid_message_3 = json.dumps({
+            "type": const.MESSAGE_TYPE_PROJECT_ASSIGNED,
+            "fatom_id": "dfjfsdjkh"
+        })
+
+        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
+            m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-0000")
+
+            m.process(invalid_message_1, 0)
+            m.process(invalid_message_2, 0)
+            m.process(invalid_message_3, 0)
 
     def test_check_for_old_finished_jobs(self):
         """

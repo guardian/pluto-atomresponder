@@ -13,7 +13,8 @@ import re
 import pika
 import time
 import os
-import posix
+import atomresponder.message_schema as message_schema
+import jsonschema
 
 logger = logging.getLogger(__name__)
 
@@ -139,9 +140,18 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         :return:
         """
         from .media_atom import request_atom_resend, HttpError
-        content = json.loads(record) ###hmm we should probably apply some validation here
+        content = json.loads(record)
 
-        logger.info(content)
+        try:
+            message_schema.validate_message(content)
+        except ValueError as e:
+            logger.error("Incoming message \'{}\' was not valid: {}".format(record, e))
+            return
+        except jsonschema.ValidationError as e:
+            logger.error("Incoming message \'{}\' was not valid: {}".format(record, e))
+            return
+
+        logger.info("Valid message of type {}: {}".format(content["type"],content))
 
         #We get two types of message on the stream, one for incoming xml the other for incoming media.
         if content['type'] == const.MESSAGE_TYPE_MEDIA or content['type'] == const.MESSAGE_TYPE_RESYNC_MEDIA:
