@@ -64,17 +64,21 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         routingkey = "atomresponder.atom.{}".format(type)
 
-        try:
-            linked_project = LinkedProject.objects.get(project_id=int(content['projectId']))
-            commission_id = linked_project.commission.id
-        except ValueError:
-            logger.error("Project ID {} does not convert to integer!".format(content['projectId']))
-            commission_id = -1
-        except KeyError:
-            logger.error("Content has no projectId? invalid message.")
-            raise RuntimeError("Invalid message")
-        except LinkedProject.DoesNotExist:
-            commission_id = -1
+        #don't bother with a lookup if there is no project ID
+        if "projectId" in content and content["projectId"] is not None:
+            try:
+                linked_project = LinkedProject.objects.get(project_id=int(content['projectId']))
+                commission_id = linked_project.commission.id
+            except ValueError:
+                logger.error("Project ID {} does not convert to integer!".format(content['projectId']))
+                commission_id = -1
+            except KeyError:
+                logger.error("Content has no projectId? invalid message.")
+                raise RuntimeError("Invalid message")
+            except LinkedProject.DoesNotExist:
+                commission_id = -1
+        else:
+            commission_id = None
 
         if statinfo is not None:
             statpart = {
@@ -159,10 +163,15 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
                 atom_user = content['user']
             else:
                 atom_user = None
+            if "projectId" in content and content["projectId"] is not None:
+                project_id = content["projectId"]
+            else:
+                project_id = None
+
             master_item, created = self.get_or_create_master_item(content['atomId'],
                                                                   title=content['title'],
                                                                   filename=content['s3Key'],
-                                                                  project_id=content['projectId'], ###project_id is the field that will become optional
+                                                                  project_id=project_id,
                                                                   user=atom_user)
 
             return self.import_new_item(master_item, content)

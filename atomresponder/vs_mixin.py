@@ -56,10 +56,12 @@ class VSMixin(object):
         basemeta = {
             const.GNM_ASSET_CATEGORY: "Deliverable",
             const.GNM_ASSET_ORIGINAL_FILENAME: filename,
-            const.GNM_ASSET_CONTAINING_PROJECTS: [project_id],
             const.GNM_ASSET_OWNER: user,
             const.GNM_ASSET_FILE_CREATED: datetime.datetime.now().isoformat("T")
         }
+
+        if project_id is not None:
+            basemeta[const.GNM_ASSET_CONTAINING_PROJECTS] = [project_id]
 
         builder = item.get_metadata_builder()
         builder.addMeta({'title': title})
