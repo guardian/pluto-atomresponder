@@ -258,7 +258,6 @@ class TestMasterImporter(django.test.TestCase):
         """
         from atomresponder.master_importer import MasterImportResponder
         import atomresponder.constants as const
-        from atomresponder.media_atom import HttpError
         import json
         from django.conf import settings
         from gnmvidispine.vs_item import VSItem
@@ -371,6 +370,66 @@ class TestMasterImporter(django.test.TestCase):
             m.process(invalid_message_1, 0)
             m.process(invalid_message_2, 0)
             m.process(invalid_message_3, 0)
+
+    def test_process_noprojectid(self):
+        """
+        if there is no project id in the incoming data then it should still be imported and forwarded
+        :return:
+        """
+        from atomresponder.master_importer import MasterImportResponder
+        import atomresponder.constants as const
+        import json
+        from gnmvidispine.vs_item import VSItem
+
+        fakemessage = json.dumps({
+            "type": const.MESSAGE_TYPE_MEDIA,
+            "s3Key": "path/to/some/media",
+            "projectId": None,
+            "title": "Fred",
+            "atomId": "530212A9-72D7-47CE-AFB5-224A5A90623F"
+        })
+        fakeMaster = MagicMock(target=VSItem)
+        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
+            with patch('atomresponder.master_importer.MasterImportResponder.import_new_item') as mock_vs_import:
+                with patch('atomresponder.master_importer.MasterImportResponder.get_item_for_atomid', return_value=None):
+                    with patch('atomresponder.master_importer.MasterImportResponder.create_placeholder_for_atomid', return_value=fakeMaster) as mock_create_placeholder:
+                        m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-0000")
+                        m.process(fakemessage, 0)
+
+                        mock_create_placeholder.assert_called_once()
+                        mock_vs_import.assert_called_once()
+
+    def test_update_pluto_record_noprojectid(self):
+        from atomresponder.master_importer import MasterImportResponder
+        import os
+        import atomresponder.constants as const
+        fake_connection = MagicMock(pika.connection.Connection)
+        fake_channel = MagicMock(pika.spec.Channel)
+        fake_channel.close = MagicMock()
+        fake_channel.basic_publish = MagicMock()
+        fake_connection.close = MagicMock()
+
+        content = {
+            "type": const.MESSAGE_TYPE_MEDIA,
+            "s3Key": "path/to/some/media",
+            "projectId": None,
+            "title": "Fred",
+            "atomId": "530212A9-72D7-47CE-AFB5-224A5A90623F",
+        }
+
+        with patch('atomresponder.master_importer.MasterImportResponder.refresh_access_credentials'):
+            with patch('atomresponder.master_importer.MasterImportResponder.setup_pika_channel',
+                       return_value=(fake_connection, fake_channel)):
+                m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-0000")
+                m.update_pluto_record("VX-123", "VX-456", content, None)
+
+                fake_channel.basic_publish.assert_called_once()
+                if "CI" in os.environ:
+                    fake_channel.close.assert_called_once()
+                else:
+                    #if CI is not set then the connection is checked during initialization, so close is called twice
+                    self.assertEqual(fake_channel.close.call_count, 2)
+                fake_connection.close.assert_called_once()
 
     def test_check_for_old_finished_jobs(self):
         """
