@@ -13,7 +13,8 @@ import re
 import pika
 import time
 import os
-import posix
+import atomresponder.message_schema as message_schema
+import jsonschema
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         self._pika_client = None
 
         #set up exchange on startup. this also means we terminate if we can't connect to the broker.
-        if not "CI" in os.environ:
+        if "CI" not in os.environ:
             (conn, channel) = self.setup_pika_channel()
             channel.close()
             conn.close()
@@ -63,17 +64,21 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         routingkey = "atomresponder.atom.{}".format(type)
 
-        try:
-            linked_project = LinkedProject.objects.get(project_id=int(content['projectId']))
-            commission_id = linked_project.commission.id
-        except ValueError:
-            logger.error("Project ID {} does not convert to integer!".format(content['projectId']))
-            commission_id = -1
-        except KeyError:
-            logger.error("Content has no projectId? invalid message.")
-            raise RuntimeError("Invalid message")
-        except LinkedProject.DoesNotExist:
-            commission_id = -1
+        #don't bother with a lookup if there is no project ID
+        if "projectId" in content and content["projectId"] is not None:
+            try:
+                linked_project = LinkedProject.objects.get(project_id=int(content['projectId']))
+                commission_id = linked_project.commission.id
+            except ValueError:
+                logger.error("Project ID {} does not convert to integer!".format(content['projectId']))
+                commission_id = -1
+            except KeyError:
+                logger.error("Content has no projectId? invalid message.")
+                raise RuntimeError("Invalid message")
+            except LinkedProject.DoesNotExist:
+                commission_id = -1
+        else:
+            commission_id = None
 
         if statinfo is not None:
             statpart = {
@@ -141,7 +146,16 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         from .media_atom import request_atom_resend, HttpError
         content = json.loads(record)
 
-        logger.info(content)
+        try:
+            message_schema.validate_message(content)
+        except ValueError as e:
+            logger.error("Incoming message \'{}\' was not valid: {}".format(record, e))
+            return
+        except jsonschema.ValidationError as e:
+            logger.error("Incoming message \'{}\' was not valid: {}".format(record, e))
+            return
+
+        logger.info("Valid message of type {}: {}".format(content["type"],content))
 
         #We get two types of message on the stream, one for incoming xml the other for incoming media.
         if content['type'] == const.MESSAGE_TYPE_MEDIA or content['type'] == const.MESSAGE_TYPE_RESYNC_MEDIA:
@@ -149,10 +163,15 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
                 atom_user = content['user']
             else:
                 atom_user = None
+            if "projectId" in content and content["projectId"] is not None:
+                project_id = content["projectId"]
+            else:
+                project_id = None
+
             master_item, created = self.get_or_create_master_item(content['atomId'],
                                                                   title=content['title'],
                                                                   filename=content['s3Key'],
-                                                                  project_id=content['projectId'],
+                                                                  project_id=project_id,
                                                                   user=atom_user)
 
             return self.import_new_item(master_item, content)
