@@ -3,7 +3,7 @@ stages:
   - upload
 
 django:
-  image: python:3.8-alpine
+  image: python:3.9-alpine
   stage: buildntest
   services:
     - postgres:9.6
