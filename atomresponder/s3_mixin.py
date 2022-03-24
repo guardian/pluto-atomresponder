@@ -76,6 +76,7 @@ class S3Mixin(object):
         keyref = bucketref.get_key(key)
 
         if keyref is None:
+            logger.error("File s3://{0}/{1} does not exist on the remote".format(bucket, key))
             raise FileDoesNotExist(bucket, key)
         n=0
         while True:
