@@ -10,7 +10,7 @@ import json
 logger = logging.getLogger(__name__)
 
 
-def send_missing_commission_message(self, commission_id):
+def send_missing_commission_message(commission_id):
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=settings.RABBITMQ_HOST,
         port=getattr(settings, "RABBITMQ_PORT", 5672),
