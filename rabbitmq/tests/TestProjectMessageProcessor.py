@@ -5,6 +5,8 @@ from mock import MagicMock, patch
 from collections import OrderedDict
 import datetime
 import pytz
+from rabbitmq.serializers import ProjectModelSerializer
+import pika
 
 
 class TestProjectMessageProcessor(TestCase):
@@ -102,8 +104,7 @@ class TestProjectMessageProcessor(TestCase):
 
     def test_invalid_comm(self):
         """
-        ProjectMessageProcessor should re-raise an exception if the commission id is not valid and not call out
-        to update_kinesis
+        ProjectMessageProcessor should attempt to send a message if the commission id. is not valid
         :return:
         """
         data = OrderedDict(
@@ -121,8 +122,88 @@ class TestProjectMessageProcessor(TestCase):
         )
 
         with patch("rabbitmq.ProjectMessageProcessor.update_kinesis") as mock_update_kinesis:
-            to_test = ProjectMessageProcessor()
-            with self.assertRaises(CachedCommission.DoesNotExist):
-                to_test.valid_message_receive("my_exchange","core.project.create","sometag",data)
+            with patch("rabbitmq.ProjectMessageProcessor.send_missing_commission_message") as mock_send_missing_commission_message:
+                to_test = ProjectMessageProcessor()
+                with self.assertRaises(CachedCommission.DoesNotExist):
+                    to_test.valid_message_receive("my_exchange", "core.project.create", "sometag", data)
 
-            mock_update_kinesis.assert_not_called()
+                mock_update_kinesis.assert_not_called()
+                mock_send_missing_commission_message.assert_called_once_with(5)
+
+    def test_raw_receive_with_exception(self):
+        """
+        If an exception is thrown when attempting to process the data a new message should be published which includes the tag 'retry_count'.
+        :return:
+        """
+        class TestProcessor(ProjectMessageProcessor):
+            serializer = ProjectModelSerializer
+
+        to_test = TestProcessor()
+        to_test.valid_message_receive = MagicMock()
+        to_test.valid_message_receive.side_effect = Exception()
+
+        mock_channel = MagicMock(target=pika.channel.Channel)
+        mock_method = MagicMock(target=pika.spec.Basic.Deliver)
+        mock_method.exchange = "exchange_name"
+        mock_method.delivery_tag = "deltag"
+        mock_method.routing_key = "routing.key"
+        mock_properties = {}
+        mock_content = b"""{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK"}"""
+
+        with self.assertRaises(ValueError):
+            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+        mock_channel.basic_ack.assert_not_called()
+        mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
+        mock_channel.basic_publish.assert_called_once_with(body=b'{"id": 12345, "title": "Some title", "projectTypeId": 1, "created": "2022-06-17T11:11", "user": "Fred", "workingGroupId": 5, "commissionId": 5, "deletable": false, "sensitive": false, "status": "In Production", "productionOffice": "UK", "retry_count": 1}', exchange='exchange_name', properties={}, routing_key='routing.key')
+
+    def test_raw_receive_with_more_than_one_retry(self):
+        """
+        If an exception is thrown when attempting to process the data a new message should be published which includes the tag 'retry_count' with its value to set to one above the old value.
+        :return:
+        """
+        class TestProcessor(ProjectMessageProcessor):
+            serializer = ProjectModelSerializer
+
+        to_test = TestProcessor()
+        to_test.valid_message_receive = MagicMock()
+        to_test.valid_message_receive.side_effect = Exception()
+
+        mock_channel = MagicMock(target=pika.channel.Channel)
+        mock_method = MagicMock(target=pika.spec.Basic.Deliver)
+        mock_method.exchange = "exchange_name"
+        mock_method.delivery_tag = "deltag"
+        mock_method.routing_key = "routing.key"
+        mock_properties = {}
+        mock_content = b"""{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":23}"""
+
+        with self.assertRaises(ValueError):
+            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+        mock_channel.basic_ack.assert_not_called()
+        mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
+        mock_channel.basic_publish.assert_called_once_with(body=b'{"id": 12345, "title": "Some title", "projectTypeId": 1, "created": "2022-06-17T11:11", "user": "Fred", "workingGroupId": 5, "commissionId": 5, "deletable": false, "sensitive": false, "status": "In Production", "productionOffice": "UK", "retry_count": 24}', exchange='exchange_name', properties={}, routing_key='routing.key')
+
+    def test_raw_receive_with_two_many_reties(self):
+        """
+        If an exception is thrown when attempting to process the data and there have already been thirty two retries for the message, the message should be published to the dead letter exchange.
+        :return:
+        """
+        class TestProcessor(ProjectMessageProcessor):
+            serializer = ProjectModelSerializer
+
+        to_test = TestProcessor()
+        to_test.valid_message_receive = MagicMock()
+        to_test.valid_message_receive.side_effect = Exception()
+
+        mock_channel = MagicMock(target=pika.channel.Channel)
+        mock_method = MagicMock(target=pika.spec.Basic.Deliver)
+        mock_method.exchange = "exchange_name"
+        mock_method.delivery_tag = "deltag"
+        mock_method.routing_key = "routing.key"
+        mock_properties = {}
+        mock_content = b"""{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":34}"""
+
+        with self.assertRaises(ValueError):
+            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+        mock_channel.basic_ack.assert_not_called()
+        mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
+        mock_channel.basic_publish.assert_called_once_with(body=b'{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":34}', exchange='atomresponder-dlx', properties={}, routing_key='routing.key')
