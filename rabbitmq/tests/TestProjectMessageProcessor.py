@@ -150,8 +150,7 @@ class TestProjectMessageProcessor(TestCase):
         mock_properties = {}
         mock_content = b"""[{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK"}]"""
 
-        with self.assertRaises(ValueError):
-            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+        to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
         mock_channel.basic_ack.assert_not_called()
         mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
         mock_channel.basic_publish.assert_called_once_with(body=b'[{"id": 12345, "title": "Some title", "projectTypeId": 1, "created": "2022-06-17T11:11", "user": "Fred", "workingGroupId": 5, "commissionId": 5, "deletable": false, "sensitive": false, "status": "In Production", "productionOffice": "UK", "retry_count": 1}]', exchange='exchange_name', properties={}, routing_key='routing.key')
@@ -176,8 +175,7 @@ class TestProjectMessageProcessor(TestCase):
         mock_properties = {}
         mock_content = b"""[{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":23}]"""
 
-        with self.assertRaises(ValueError):
-            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+        to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
         mock_channel.basic_ack.assert_not_called()
         mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
         mock_channel.basic_publish.assert_called_once_with(body=b'[{"id": 12345, "title": "Some title", "projectTypeId": 1, "created": "2022-06-17T11:11", "user": "Fred", "workingGroupId": 5, "commissionId": 5, "deletable": false, "sensitive": false, "status": "In Production", "productionOffice": "UK", "retry_count": 24}]', exchange='exchange_name', properties={}, routing_key='routing.key')
@@ -202,8 +200,7 @@ class TestProjectMessageProcessor(TestCase):
         mock_properties = {}
         mock_content = b"""[{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":34}]"""
 
-        with self.assertRaises(ValueError):
-            to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
+        to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
         mock_channel.basic_ack.assert_not_called()
         mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
         mock_channel.basic_publish.assert_called_once_with(body=b'[{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":34}]', exchange='atomresponder-dlx', properties={}, routing_key='routing.key')
