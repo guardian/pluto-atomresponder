@@ -98,10 +98,7 @@ class ProjectMessageProcessor(MessageProcessor):
                 channel.basic_ack(delivery_tag=tag)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
-                logger.info(body)
-                body_data = json.loads(body.decode('UTF-8'))
-                logger.info(type(body_data))
-                logger.info(body_data)
+                body_data = json.loads(body.decode('UTF-8'))[0]
                 should_retry = True
                 if "retry_count" in body_data:
                     if body_data["retry_count"] > 32:
@@ -111,7 +108,7 @@ class ProjectMessageProcessor(MessageProcessor):
                         body_data["retry_count"] = body_data["retry_count"] + 1
                     else:
                         body_data["retry_count"] = 1
-                    body_as_json = json.dumps(body_data).encode('UTF-8')
+                    body_as_json = json.dumps([body_data]).encode('UTF-8')
                     channel.basic_publish(exchange=method.exchange, routing_key=method.routing_key, body=body_as_json, properties=properties)
                 else:
                     channel.basic_publish(exchange="atomresponder-dlx", routing_key=method.routing_key, body=body, properties=properties)
