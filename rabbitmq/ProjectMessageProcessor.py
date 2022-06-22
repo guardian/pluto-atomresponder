@@ -114,7 +114,6 @@ class ProjectMessageProcessor(MessageProcessor):
                     channel.basic_publish(exchange="atomresponder-dlx", routing_key=method.routing_key, body=body, properties=properties)
                 channel.basic_nack(delivery_tag=tag)
                 channel.basic_cancel(method.consumer_tag)
-                raise ValueError("Could not process message")
         else:
             logger.error("Validated content was empty but no validation error? There must be a bug")
             channel.basic_nack(delivery_tag=tag, requeue=True)
