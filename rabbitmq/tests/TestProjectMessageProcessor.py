@@ -203,4 +203,4 @@ class TestProjectMessageProcessor(TestCase):
         to_test.raw_message_receive(mock_channel, mock_method, mock_properties, mock_content)
         mock_channel.basic_ack.assert_not_called()
         mock_channel.basic_nack.assert_called_once_with(delivery_tag="deltag")
-        mock_channel.basic_publish.assert_called_once_with(body=b'[{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":34}]', exchange='atomresponder-dlx', properties={}, routing_key='routing.key')
+        mock_channel.basic_publish.assert_called_once_with(body=b'[{"id":12345,"title":"Some title","projectTypeId":1,"created":"2022-06-17T11:11","user":"Fred","workingGroupId":5,"commissionId":5,"deletable":false,"sensitive":false,"status":"In Production","productionOffice":"UK","retry_count":34}]', exchange='atomresponder-dlx', properties={}, routing_key='atomresponder-dlq')
