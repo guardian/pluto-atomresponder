@@ -98,6 +98,8 @@ class ProjectMessageProcessor(MessageProcessor):
                 channel.basic_ack(delivery_tag=tag)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
+                channel.basic_nack(delivery_tag=tag)
+                channel.basic_cancel(method.consumer_tag)
                 logger.info(body)
                 body_data = json.loads(body.decode('UTF-8'))[0]
                 should_retry = True
@@ -116,8 +118,6 @@ class ProjectMessageProcessor(MessageProcessor):
                 else:
                     logger.info("About to attempt to publish the message again with a retry count of {0} on exchange atomresponder-dlx with key {1}".format((body_data["retry_count"]), method.routing_key))
                     channel.basic_publish(exchange="atomresponder-dlx", routing_key=method.routing_key, body=body, properties=properties)
-                channel.basic_nack(delivery_tag=tag)
-                channel.basic_cancel(method.consumer_tag)
         else:
             logger.error("Validated content was empty but no validation error? There must be a bug")
             channel.basic_nack(delivery_tag=tag, requeue=True)
