@@ -98,6 +98,7 @@ class ProjectMessageProcessor(MessageProcessor):
                 channel.basic_ack(delivery_tag=tag)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
+                logger.info(body)
                 body_data = json.loads(body.decode('UTF-8'))[0]
                 should_retry = True
                 if "retry_count" in body_data:
@@ -109,8 +110,11 @@ class ProjectMessageProcessor(MessageProcessor):
                     else:
                         body_data["retry_count"] = 1
                     body_as_json = json.dumps([body_data]).encode('UTF-8')
+                    logger.info(body_as_json)
+                    logger.info("About to attempt to publish the message again with a retry count of {0} on exchange {1} with key {2}".format((body_data["retry_count"]), method.exchange, method.routing_key))
                     channel.basic_publish(exchange=method.exchange, routing_key=method.routing_key, body=body_as_json, properties=properties)
                 else:
+                    logger.info("About to attempt to publish the message again with a retry count of {0} on exchange atomresponder-dlx with key {1}".format((body_data["retry_count"]), method.routing_key))
                     channel.basic_publish(exchange="atomresponder-dlx", routing_key=method.routing_key, body=body, properties=properties)
                 channel.basic_nack(delivery_tag=tag)
                 channel.basic_cancel(method.consumer_tag)
