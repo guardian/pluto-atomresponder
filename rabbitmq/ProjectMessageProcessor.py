@@ -64,17 +64,6 @@ class ProjectMessageProcessor(MessageProcessor):
             raise
 
     def raw_message_receive(self, channel, method, properties, body):
-        """
-        called from the pika library when data is received on our channel.
-        the implementation will attempt to decode the body as JSON and validate it using jsonschema against
-        the schema provided by the `schema` member before passing it on to valid_message_receive
-        normally you DON'T want to over-ride this, you want valid_message_receive
-        :param channel:
-        :param method:
-        :param properties:
-        :param body:
-        :return:
-        """
         tag = method.delivery_tag
         validated_content = None
         try:
