@@ -98,7 +98,7 @@ class ProjectMessageProcessor(MessageProcessor):
                 channel.basic_ack(delivery_tag=tag)
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
-                channel.basic_nack(delivery_tag=tag)
+                channel.basic_nack(delivery_tag=tag, requeue=False)
                 body_data = json.loads(body.decode('UTF-8'))[0]
                 should_retry = True
                 if "retry_count" in body_data:
