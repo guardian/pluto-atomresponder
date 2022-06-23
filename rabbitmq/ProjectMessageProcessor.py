@@ -99,7 +99,6 @@ class ProjectMessageProcessor(MessageProcessor):
             except Exception as e:
                 logger.error("Could not process message: {0}".format(str(e)))
                 channel.basic_nack(delivery_tag=tag)
-                channel.basic_cancel(method.consumer_tag)
                 logger.info(body)
                 body_data = json.loads(body.decode('UTF-8'))[0]
                 should_retry = True
