@@ -114,7 +114,10 @@ class ProjectMessageProcessor(MessageProcessor):
                     body_as_json = json.dumps([body_data]).encode('UTF-8')
                     logger.info(body_as_json)
                     logger.info("About to attempt to publish the message again with a retry count of {0} on exchange {1} with key {2}".format((body_data["retry_count"]), method.exchange, method.routing_key))
-                    channel.basic_publish(exchange=method.exchange, routing_key=method.routing_key, body=body_as_json, properties=properties)
+                    try:
+                        channel.basic_publish(exchange=method.exchange, routing_key=method.routing_key, body=body_as_json, properties=properties)
+                    except Exception as e:
+                        logger.error("Could not publish message: {0}".format(str(e)))
                 else:
                     logger.info("About to attempt to publish the message again with a retry count of {0} on exchange atomresponder-dlx with key {1}".format((body_data["retry_count"]), method.routing_key))
                     channel.basic_publish(exchange="atomresponder-dlx", routing_key=method.routing_key, body=body, properties=properties)
