@@ -110,14 +110,14 @@ class ProjectMessageProcessor(MessageProcessor):
                     else:
                         body_data["retry_count"] = 1
                     body_as_json = json.dumps([body_data]).encode('UTF-8')
-                    logger.info("Publishing the message again with a retry count of {0} on exchange {1} with key {2}".format((body_data["retry_count"]), method.exchange, method.routing_key))
+                    logger.info("Publishing the message again with a retry count of {0} on exchange {1} with key {2}".format(body_data["retry_count"], method.exchange, method.routing_key))
                     try:
                         channel.basic_publish(exchange=method.exchange, routing_key=method.routing_key, body=body_as_json, properties=properties)
                     except Exception as e:
                         logger.error("Could not publish message: {0}".format(str(e)))
                 else:
-                    logger.info("Publishing the message again with a retry count of {0} on exchange atomresponder-dlx with key {1}".format((body_data["retry_count"]), method.routing_key))
-                    channel.basic_publish(exchange="atomresponder-dlx", routing_key=method.routing_key, body=body, properties=properties)
+                    logger.info("Publishing the message again with a retry count of {0} on exchange atomresponder-dlx with key atomresponder-dlq".format(body_data["retry_count"]))
+                    channel.basic_publish(exchange="atomresponder-dlx", routing_key="atomresponder-dlq", body=body, properties=properties)
         else:
             logger.error("Validated content was empty but no validation error? There must be a bug")
             channel.basic_nack(delivery_tag=tag, requeue=True)
