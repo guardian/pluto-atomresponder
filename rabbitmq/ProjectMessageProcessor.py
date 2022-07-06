@@ -18,7 +18,7 @@ def send_missing_commission_message(commission_id):
         credentials=pika.PlainCredentials(username=settings.RABBITMQ_USER, password=settings.RABBITMQ_PASSWORD)
     ))
     channel = connection.channel()
-    channel.queue_declare("missing-commissions", auto_delete=True)
+    channel.queue_declare("missing-commissions")
     channel.queue_bind(exchange="pluto-atomresponder", queue="missing-commissions",
                        routing_key="atomresponder.commission.missing-id")
     logger.info("About to send commission missing id. message for commission: {0}.".format(commission_id))
