@@ -4,7 +4,7 @@ mock==4.0.2
 djangorestframework==3.11.2
 PyYAML==5.4
 djangorestframework-xml==2.0.0
-requests==2.26.0
+requests==2.31.0
 boto==2.49.0
 lxml==4.9.1
 pika==1.1.0
