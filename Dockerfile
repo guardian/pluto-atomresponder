@@ -1,8 +1,10 @@
-FROM python:3.8-alpine
+FROM python:3.9-alpine
 
 COPY requirements.txt /opt/pluto-atomresponder/requirements.txt
 ADD gnmvidispine /tmp/gnmvidispine
 WORKDIR /opt/pluto-atomresponder
+RUN pip install --upgrade pip
+RUN pip install Cython
 RUN apk add --no-cache alpine-sdk linux-headers openssl-dev libffi-dev mailcap libxml2-dev libxml2 libxslt-dev libxslt postgresql-dev postgresql-libs && \
     pip install -r /tmp/gnmvidispine/requirements.txt && \
     cd /tmp/gnmvidispine && python /tmp/gnmvidispine/setup.py install && cd /opt/pluto-atomresponder && \
