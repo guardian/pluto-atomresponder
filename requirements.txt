@@ -1,4 +1,4 @@
-django==3.2.20
+django==3.2.21
 certifi==2023.7.22
 mock==4.0.2
 djangorestframework==3.11.2
