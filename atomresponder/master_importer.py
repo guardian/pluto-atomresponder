@@ -48,7 +48,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
         ))
 
         channel = conn.channel()
-        channel.exchange_declare(settings.RABBITMQ_EXCHANGE, exchange_type="topic")
+        channel.exchange_declare(settings.RABBITMQ_EXCHANGE, exchange_type="topic", durable=True)
         channel.confirm_delivery()
 
         return conn, channel
