@@ -53,7 +53,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         return conn, channel
 
-    def update_pluto_record(self, item_id, job_id, content:dict, statinfo):
+    def update_pluto_record(self, item_id, job_id, content:dict, statinfo, download_path):
         (conn, channel) = self.setup_pika_channel()
 
         if 'type' not in content:
@@ -95,7 +95,8 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             "itemId": item_id,
             "jobId": job_id,
             "commissionId": commission_id,
-            **statpart
+            **statpart,
+            "path": download_path
         }
 
         while True:
@@ -186,7 +187,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
             master_item = self.get_item_for_atomid(content['atomId'])
             if master_item is not None:
                 logger.info("Master item for atom already exists at {0}, assigning".format(master_item.name))
-                self.update_pluto_record(master_item.name, None, content, None)
+                self.update_pluto_record(master_item.name, None, content, None, None)
             else:
                 logger.warning("No master item exists for atom {0}.  Requesting a re-send from media atom tool".format(content['atomId']))
                 try:
@@ -325,7 +326,7 @@ class MasterImportResponder(KinesisResponder, S3Mixin, VSMixin):
 
         statinfo = os.stat(downloaded_path)
 
-        self.update_pluto_record(vs_item_id, job_result.name, content, statinfo)
+        self.update_pluto_record(vs_item_id, job_result.name, content, statinfo, downloaded_path)
 
         try:
             logger.info("{n}: Looking for PAC info that has been already registered".format(n=vs_item_id))
