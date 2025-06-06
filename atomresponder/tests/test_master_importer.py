@@ -421,7 +421,7 @@ class TestMasterImporter(django.test.TestCase):
             with patch('atomresponder.master_importer.MasterImportResponder.setup_pika_channel',
                        return_value=(fake_connection, fake_channel)):
                 m = MasterImportResponder("fake role", "fake session", "fake stream", "shard-0000")
-                m.update_pluto_record("VX-123", "VX-456", content, None)
+                m.update_pluto_record("VX-123", "VX-456", content, None, None)
 
                 fake_channel.basic_publish.assert_called_once()
                 if "CI" in os.environ:
