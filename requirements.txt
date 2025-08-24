@@ -13,3 +13,4 @@ psycopg2==2.8.6
 urllib3>=1.26.5 # not directly required, pinned by Snyk to avoid a vulnerability
 setuptools>=68.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
 sqlparse>=0.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
